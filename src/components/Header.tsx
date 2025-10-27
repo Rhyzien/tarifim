@@ -6,14 +6,26 @@ const Header = () => {
   return (
     <header className="flex items-center justify-between whitespace-nowrap border-b border-border px-10 py-3 bg-background">
       <div className="flex items-center gap-4 text-foreground">
-        <div className="size-4">
+        <div className="size-8">
           <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            {/* Tencere gövdesi */}
+            <ellipse cx="24" cy="32" rx="16" ry="3" fill="currentColor" opacity="0.2"/>
             <path
-              fillRule="evenodd"
-              clipRule="evenodd"
-              d="M12.0799 24L4 19.2479L9.95537 8.75216L18.04 13.4961L18.0446 4H29.9554L29.96 13.4961L38.0446 8.75216L44 19.2479L35.92 24L44 28.7521L38.0446 39.2479L29.96 34.5039L29.9554 44H18.0446L18.04 34.5039L9.95537 39.2479L4 28.7521L12.0799 24Z"
+              d="M10 28 C10 22 12 18 24 18 C36 18 38 22 38 28 L38 32 C38 36 34 38 24 38 C14 38 10 36 10 32 Z"
               fill="currentColor"
+              opacity="0.9"
             />
+            {/* Tencere kapağı - yarı açık */}
+            <ellipse cx="28" cy="14" rx="14" ry="3" fill="currentColor" transform="rotate(-15 28 14)"/>
+            <path
+              d="M14 16 C14 15 16 14 28 14 C40 14 42 15 42 16"
+              stroke="currentColor"
+              strokeWidth="2"
+              fill="none"
+              transform="rotate(-15 28 15)"
+            />
+            {/* Kapak sapı */}
+            <circle cx="30" cy="10" r="2" fill="currentColor"/>
           </svg>
         </div>
         <h2 className="text-foreground text-lg font-bold leading-tight tracking-[-0.015em]">
