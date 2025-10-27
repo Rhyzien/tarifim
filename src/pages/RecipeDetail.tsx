@@ -10,37 +10,28 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-
-// Temporary mock data - will be replaced with real data later
-const mockRecipe = {
-  id: "1",
-  title: "Fırında Sebzeli Tavuk",
-  description: "Bu tarif, sebzelerle zenginleştirilmiş, fırında pişirilmiş tavuğun lezzetli ve sağlıklı bir versiyonudur. Hem pratik hem de doyurucu olan bu yemek, çalışan anneler için idealdir.",
-  imageUrl: "https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=800&h=533&fit=crop",
-  ingredients: [
-    "1 kg tavuk but veya göğüs",
-    "2 adet patates",
-    "2 adet havuç",
-    "1 adet soğan",
-    "2 adet biber (kırmızı ve yeşil)",
-    "Zeytinyağı, tuz, karabiber, kekik"
-  ],
-  steps: [
-    { number: 1, description: "Sebzeleri iri iri doğrayın." },
-    { number: 2, description: "Tavuk ve sebzeleri bir fırın kabına yerleştirin." },
-    { number: 3, description: "Zeytinyağı, tuz, karabiber ve kekik ile tatlandırın." },
-    { number: 4, description: "180 derecede ısıtılmış fırında 45-50 dakika pişirin." },
-    { number: 5, description: "Sıcak servis yapın." }
-  ],
-  author: {
-    name: "Elif Yılmaz",
-    recipeCount: 15,
-    avatarUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop"
-  }
-};
+import { getRecipeById } from "@/data/mockRecipes";
 
 const RecipeDetail = () => {
   const { id } = useParams();
+  const recipe = getRecipeById(id || "");
+
+  if (!recipe) {
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <Header />
+        <main className="flex-1 px-4 md:px-10 lg:px-40 py-5">
+          <div className="max-w-[960px] mx-auto text-center py-20">
+            <h1 className="text-foreground text-[28px] font-bold mb-4">Tarif Bulunamadı</h1>
+            <p className="text-muted-foreground mb-6">Aradığınız tarif mevcut değil.</p>
+            <Button asChild>
+              <Link to="/">Ana Sayfaya Dön</Link>
+            </Button>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -69,20 +60,20 @@ const RecipeDetail = () => {
 
           {/* Recipe Title */}
           <h1 className="text-foreground text-[28px] font-bold leading-tight px-4 text-left pb-3 pt-5">
-            {mockRecipe.title}
+            {recipe.title}
           </h1>
 
           {/* Recipe Description */}
           <p className="text-foreground text-base font-normal leading-normal pb-3 pt-1 px-4">
-            {mockRecipe.description}
+            {recipe.description}
           </p>
 
           {/* Recipe Image */}
           <div className="w-full py-3">
             <div className="w-full aspect-[3/2] rounded-lg overflow-hidden">
               <img 
-                src={mockRecipe.imageUrl} 
-                alt={mockRecipe.title}
+                src={recipe.imageUrl} 
+                alt={recipe.title}
                 className="w-full h-full object-cover"
               />
             </div>
@@ -93,7 +84,7 @@ const RecipeDetail = () => {
             Malzemeler
           </h2>
           <div className="px-4 space-y-3">
-            {mockRecipe.ingredients.map((ingredient, index) => (
+            {recipe.ingredients.map((ingredient, index) => (
               <label key={index} className="flex gap-x-3 items-start cursor-pointer">
                 <Checkbox className="mt-0.5" />
                 <p className="text-foreground text-base font-normal leading-normal">
@@ -108,7 +99,7 @@ const RecipeDetail = () => {
             Tarif
           </h2>
           <div className="space-y-2">
-            {mockRecipe.steps.map((step) => (
+            {recipe.steps.map((step) => (
               <div key={step.number} className="flex items-center gap-4 px-4 min-h-[72px] py-2">
                 <div className="flex items-center justify-center rounded-lg bg-secondary shrink-0 size-12">
                   <span className="text-foreground text-lg font-medium">{step.number}</span>
@@ -132,14 +123,14 @@ const RecipeDetail = () => {
           <div className="flex items-center gap-4 px-4 min-h-[72px] py-2">
             <div
               className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-14 w-14 shrink-0"
-              style={{ backgroundImage: `url("${mockRecipe.author.avatarUrl}")` }}
+              style={{ backgroundImage: `url("${recipe.authorDetails.avatarUrl}")` }}
             />
             <div className="flex flex-col justify-center">
               <p className="text-foreground text-base font-medium leading-normal">
-                {mockRecipe.author.name}
+                {recipe.authorDetails.name}
               </p>
               <p className="text-muted-foreground text-sm font-normal leading-normal">
-                {mockRecipe.author.recipeCount} tarif
+                {recipe.authorDetails.recipeCount} tarif
               </p>
             </div>
           </div>
