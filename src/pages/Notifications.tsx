@@ -1,4 +1,5 @@
 import Header from "@/components/Header";
+import { Link } from "react-router-dom";
 
 interface Notification {
   id: string;
@@ -66,32 +67,47 @@ const Notifications = () => {
             </p>
           </div>
           
-          {mockNotifications.map((notification) => (
-            <div 
-              key={notification.id}
-              className="flex items-center gap-4 bg-background px-4 min-h-[72px] py-2 justify-between hover:bg-muted/50 transition-colors cursor-pointer"
-            >
-              <div className="flex items-center gap-4">
-                <div
-                  className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-14 w-14 shrink-0"
-                  style={{ backgroundImage: `url("${notification.avatarUrl}")` }}
-                />
-                <div className="flex flex-col justify-center">
-                  <p className="text-foreground text-base font-medium leading-normal line-clamp-1">
-                    {notification.name}
-                  </p>
-                  <p className="text-muted-foreground text-sm font-normal leading-normal line-clamp-2">
-                    {notification.message}
+          {mockNotifications.map((notification) => {
+            // Bildirim tipine göre link belirle
+            let notificationLink = "/profile";
+            if (notification.message.includes("Yeni tarif paylaştı")) {
+              notificationLink = "/recipe/1";
+            } else if (notification.message.includes("Yorum yaptı")) {
+              notificationLink = "/recipe/1";
+            } else if (notification.message.includes("beğendi")) {
+              notificationLink = "/recipe/1";
+            } else if (notification.message.includes("kaydetti")) {
+              notificationLink = "/recipe/1";
+            }
+            
+            return (
+              <Link 
+                key={notification.id}
+                to={notificationLink}
+                className="flex items-center gap-4 bg-background px-4 min-h-[72px] py-2 justify-between hover:bg-muted/50 transition-colors cursor-pointer"
+              >
+                <div className="flex items-center gap-4">
+                  <div
+                    className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-14 w-14 shrink-0"
+                    style={{ backgroundImage: `url("${notification.avatarUrl}")` }}
+                  />
+                  <div className="flex flex-col justify-center">
+                    <p className="text-foreground text-base font-medium leading-normal line-clamp-1">
+                      {notification.name}
+                    </p>
+                    <p className="text-muted-foreground text-sm font-normal leading-normal line-clamp-2">
+                      {notification.message}
+                    </p>
+                  </div>
+                </div>
+                <div className="shrink-0">
+                  <p className="text-muted-foreground text-sm font-normal leading-normal">
+                    {notification.time}
                   </p>
                 </div>
-              </div>
-              <div className="shrink-0">
-                <p className="text-muted-foreground text-sm font-normal leading-normal">
-                  {notification.time}
-                </p>
-              </div>
-            </div>
-          ))}
+              </Link>
+            );
+          })}
         </div>
       </main>
     </div>

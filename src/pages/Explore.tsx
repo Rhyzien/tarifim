@@ -1,42 +1,42 @@
+import { useState, useEffect, useRef } from "react";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-
-interface FeedRecipe {
-  id: string;
-  title: string;
-  author: string;
-  imageUrl: string;
-}
-
-const mockFeedRecipes: FeedRecipe[] = [
-  {
-    id: "feed-1",
-    title: "Lezzetli Vegan Takolar",
-    author: "Clara Bennett",
-    imageUrl: "https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?w=800&h=450&fit=crop"
-  },
-  {
-    id: "feed-2",
-    title: "Ev Yapımı Pestolu Makarna",
-    author: "Leo Harper",
-    imageUrl: "https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=800&h=450&fit=crop"
-  },
-  {
-    id: "feed-3",
-    title: "Acılı Tavuk Köri",
-    author: "Amelia Foster",
-    imageUrl: "https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd?w=800&h=450&fit=crop"
-  },
-  {
-    id: "feed-4",
-    title: "Çikolatalı Kurabiyeler",
-    author: "Owen Mitchell",
-    imageUrl: "https://images.unsplash.com/photo-1499636136210-6f4ee915583e?w=800&h=450&fit=crop"
-  }
-];
+import { mockRecipes } from "@/data/mockRecipes";
 
 const Explore = () => {
+  const [displayedRecipes, setDisplayedRecipes] = useState(mockRecipes.slice(0, 4));
+  const [hasMore, setHasMore] = useState(true);
+  const observerTarget = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          loadMoreRecipes();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => observer.disconnect();
+  }, [displayedRecipes, hasMore]);
+
+  const loadMoreRecipes = () => {
+    const currentLength = displayedRecipes.length;
+    const allRecipes = [...mockRecipes, ...mockRecipes, ...mockRecipes]; // Sonsuz scroll için tekrar et
+    const moreRecipes = allRecipes.slice(currentLength, currentLength + 4);
+    
+    if (moreRecipes.length > 0) {
+      setDisplayedRecipes(prev => [...prev, ...moreRecipes]);
+    } else {
+      setHasMore(false);
+    }
+  };
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
@@ -47,17 +47,21 @@ const Explore = () => {
             Akışınız
           </h2>
           
-          {mockFeedRecipes.map((recipe) => (
-            <div key={recipe.id} className="p-4">
+          {displayedRecipes.map((recipe, index) => (
+            <div key={`${recipe.id}-${index}`} className="p-4">
               <div className="flex flex-col items-stretch justify-start rounded-lg lg:flex-row lg:items-start">
-                <div
-                  className="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-lg"
-                  style={{ backgroundImage: `url("${recipe.imageUrl}")` }}
-                />
+                <Link to={`/recipe/${recipe.id}`} className="w-full">
+                  <div
+                    className="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-lg hover:opacity-90 transition-opacity cursor-pointer"
+                    style={{ backgroundImage: `url("${recipe.imageUrl}")` }}
+                  />
+                </Link>
                 <div className="flex w-full min-w-72 grow flex-col items-stretch justify-center gap-1 py-4 lg:px-4">
-                  <p className="text-foreground text-lg font-bold leading-tight tracking-[-0.015em]">
-                    {recipe.title}
-                  </p>
+                  <Link to={`/recipe/${recipe.id}`}>
+                    <p className="text-foreground text-lg font-bold leading-tight tracking-[-0.015em] hover:text-accent transition-colors cursor-pointer">
+                      {recipe.title}
+                    </p>
+                  </Link>
                   <div className="flex items-end gap-3 justify-between">
                     <p className="text-muted-foreground text-base font-normal leading-normal">
                       {recipe.author} tarafından
@@ -75,6 +79,12 @@ const Explore = () => {
               </div>
             </div>
           ))}
+          
+          {hasMore && (
+            <div ref={observerTarget} className="flex justify-center py-8">
+              <div className="animate-pulse text-muted-foreground">Yükleniyor...</div>
+            </div>
+          )}
         </div>
       </main>
     </div>

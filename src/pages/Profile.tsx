@@ -128,6 +128,134 @@ const Profile = () => {
               ))}
             </div>
           )}
+
+          {activeTab === "following" && (
+            <div className="px-4 py-3 space-y-2">
+              <div className="flex items-center gap-4 bg-background px-4 min-h-[72px] py-2 justify-between hover:bg-muted/50 transition-colors rounded-lg">
+                <div className="flex items-center gap-4">
+                  <div
+                    className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-14 w-14 shrink-0"
+                    style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop")' }}
+                  />
+                  <div className="flex flex-col justify-center">
+                    <p className="text-foreground text-base font-medium leading-normal">
+                      Ayşe Yılmaz
+                    </p>
+                    <p className="text-muted-foreground text-sm font-normal leading-normal">
+                      24 tarif
+                    </p>
+                  </div>
+                </div>
+                <button className="px-4 py-2 bg-muted hover:bg-muted/80 rounded-lg text-sm font-medium">
+                  Takip Ediliyor
+                </button>
+              </div>
+              
+              <div className="flex items-center gap-4 bg-background px-4 min-h-[72px] py-2 justify-between hover:bg-muted/50 transition-colors rounded-lg">
+                <div className="flex items-center gap-4">
+                  <div
+                    className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-14 w-14 shrink-0"
+                    style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop")' }}
+                  />
+                  <div className="flex flex-col justify-center">
+                    <p className="text-foreground text-base font-medium leading-normal">
+                      Mehmet Demir
+                    </p>
+                    <p className="text-muted-foreground text-sm font-normal leading-normal">
+                      18 tarif
+                    </p>
+                  </div>
+                </div>
+                <button className="px-4 py-2 bg-muted hover:bg-muted/80 rounded-lg text-sm font-medium">
+                  Takip Ediliyor
+                </button>
+              </div>
+
+              <div className="flex items-center gap-4 bg-background px-4 min-h-[72px] py-2 justify-between hover:bg-muted/50 transition-colors rounded-lg">
+                <div className="flex items-center gap-4">
+                  <div
+                    className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-14 w-14 shrink-0"
+                    style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop")' }}
+                  />
+                  <div className="flex flex-col justify-center">
+                    <p className="text-foreground text-base font-medium leading-normal">
+                      Elif Kaya
+                    </p>
+                    <p className="text-muted-foreground text-sm font-normal leading-normal">
+                      32 tarif
+                    </p>
+                  </div>
+                </div>
+                <button className="px-4 py-2 bg-muted hover:bg-muted/80 rounded-lg text-sm font-medium">
+                  Takip Ediliyor
+                </button>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "settings" && (
+            <div className="px-4 py-3 max-w-2xl">
+              <div className="space-y-6">
+                <div className="flex flex-col gap-2">
+                  <h3 className="text-foreground text-lg font-bold">Profil Ayarları</h3>
+                  <div className="flex flex-col gap-3">
+                    <label className="flex flex-col gap-2">
+                      <span className="text-foreground text-sm font-medium">Ad Soyad</span>
+                      <input
+                        type="text"
+                        defaultValue="Zeynep Demir"
+                        className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-foreground focus:outline-0 focus:ring-0 border border-border bg-background focus:border-border h-14 placeholder:text-muted-foreground p-[15px] text-base font-normal leading-normal"
+                      />
+                    </label>
+                    
+                    <label className="flex flex-col gap-2">
+                      <span className="text-foreground text-sm font-medium">Biyografi</span>
+                      <textarea
+                        defaultValue="Yemek yapmayı ve yeni lezzetler denemeyi seven bir gurme. Farklı kültürlere ait tarifleri keşfetmek ve kendi yorumlarımla sunmak en büyük tutkum."
+                        className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-foreground focus:outline-0 focus:ring-0 border border-border bg-background focus:border-border min-h-36 placeholder:text-muted-foreground p-[15px] text-base font-normal leading-normal"
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <h3 className="text-foreground text-lg font-bold">Bildirim Ayarları</h3>
+                  <div className="flex flex-col gap-3">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input type="checkbox" defaultChecked className="h-5 w-5" />
+                      <span className="text-foreground text-sm">Yeni takipçi bildirimleri</span>
+                    </label>
+                    
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input type="checkbox" defaultChecked className="h-5 w-5" />
+                      <span className="text-foreground text-sm">Yorum bildirimleri</span>
+                    </label>
+                    
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input type="checkbox" defaultChecked className="h-5 w-5" />
+                      <span className="text-foreground text-sm">Beğeni bildirimleri</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <h3 className="text-foreground text-lg font-bold">Gizlilik</h3>
+                  <div className="flex flex-col gap-3">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input type="checkbox" className="h-5 w-5" />
+                      <span className="text-foreground text-sm">Hesabı gizli yap</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="pt-4">
+                  <button className="px-6 py-3 bg-accent hover:bg-accent/90 text-accent-foreground rounded-lg text-sm font-bold">
+                    Değişiklikleri Kaydet
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </main>
     </div>
