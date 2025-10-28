@@ -1,11 +1,13 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Header = () => {
+  const navigate = useNavigate();
+
   return (
     <header className="flex items-center justify-between whitespace-nowrap border-b border-border px-10 py-3 bg-background">
-      <div className="flex items-center gap-4 text-foreground">
+      <Link to="/" className="flex items-center gap-4 text-foreground">
         <div className="size-4">
           <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
@@ -19,7 +21,7 @@ const Header = () => {
         <h2 className="text-foreground text-lg font-bold leading-tight tracking-[-0.015em]">
           Tarifim.com
         </h2>
-      </div>
+      </Link>
       <div className="flex flex-1 justify-end gap-8">
         <nav className="flex items-center gap-9">
           <Link to="/" className="text-foreground text-sm font-medium leading-normal hover:text-accent transition-colors">
@@ -36,10 +38,12 @@ const Header = () => {
           variant="secondary"
           size="icon"
           className="h-10 w-10"
+          onClick={() => navigate('/notifications')}
         >
           <Bell className="h-5 w-5" />
         </Button>
         <div
+          onClick={() => navigate('/profile')}
           className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 cursor-pointer hover:ring-2 hover:ring-accent transition-all"
           style={{
             backgroundImage: 'url("https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop")'
