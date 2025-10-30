@@ -1,19 +1,38 @@
 import { useState, useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { mockRecipes } from "@/data/mockRecipes";
+import { mockRecipes, Recipe } from "@/data/mockRecipes";
 
 const Explore = () => {
-  const [displayedRecipes, setDisplayedRecipes] = useState(mockRecipes.slice(0, 4));
-  const [hasMore, setHasMore] = useState(true);
+  const [displayedRecipes, setDisplayedRecipes] = useState<Recipe[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const observerTarget = useRef<HTMLDivElement>(null);
+  const itemsPerLoad = 4;
 
   useEffect(() => {
+    // Load user recipes from localStorage
+    const userRecipes = JSON.parse(localStorage.getItem('userRecipes') || '[]');
+    const allRecipes = [...userRecipes, ...mockRecipes];
+    setDisplayedRecipes(allRecipes.slice(0, itemsPerLoad));
+
+    const loadMore = () => {
+      if (isLoading) return;
+      setIsLoading(true);
+      
+      setTimeout(() => {
+        const userRecipes = JSON.parse(localStorage.getItem('userRecipes') || '[]');
+        const allRecipes = [...userRecipes, ...mockRecipes];
+        const newItems = allRecipes.slice(displayedRecipes.length, displayedRecipes.length + itemsPerLoad);
+        setDisplayedRecipes(prev => [...prev, ...newItems]);
+        setIsLoading(false);
+      }, 500);
+    };
+
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore) {
-          loadMoreRecipes();
+        if (entries[0].isIntersecting && !isLoading) {
+          loadMore();
         }
       },
       { threshold: 0.1 }
@@ -24,19 +43,8 @@ const Explore = () => {
     }
 
     return () => observer.disconnect();
-  }, [displayedRecipes, hasMore]);
+  }, [displayedRecipes.length, isLoading]);
 
-  const loadMoreRecipes = () => {
-    const currentLength = displayedRecipes.length;
-    const allRecipes = [...mockRecipes, ...mockRecipes, ...mockRecipes]; // Sonsuz scroll için tekrar et
-    const moreRecipes = allRecipes.slice(currentLength, currentLength + 4);
-    
-    if (moreRecipes.length > 0) {
-      setDisplayedRecipes(prev => [...prev, ...moreRecipes]);
-    } else {
-      setHasMore(false);
-    }
-  };
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
@@ -67,10 +75,7 @@ const Explore = () => {
                       {recipe.author} tarafından
                     </p>
                     <Link to={`/recipe/${recipe.id}`}>
-                      <Button
-                        size="sm"
-                        className="bg-accent text-foreground hover:bg-accent/80 font-medium"
-                      >
+                      <Button className="bg-[#11d452] hover:bg-[#11d452]/90 text-[#111813]">
                         Tarifi Görüntüle
                       </Button>
                     </Link>
@@ -80,11 +85,11 @@ const Explore = () => {
             </div>
           ))}
           
-          {hasMore && (
-            <div ref={observerTarget} className="flex justify-center py-8">
+          <div ref={observerTarget} className="flex justify-center py-8">
+            {isLoading && (
               <div className="animate-pulse text-muted-foreground">Yükleniyor...</div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </main>
     </div>
