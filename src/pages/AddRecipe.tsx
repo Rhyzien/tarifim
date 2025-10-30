@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import { Input } from "@/components/ui/input";
@@ -6,11 +6,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Upload } from "lucide-react";
+import { Upload, X } from "lucide-react";
 import { toast } from "sonner";
+import { mockRecipes } from "@/data/mockRecipes";
 
 const AddRecipe = () => {
   const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
   const [formData, setFormData] = useState({
     title: "",
     ingredients: "",
@@ -21,11 +24,52 @@ const AddRecipe = () => {
     category: "",
   });
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Create new recipe
+    const newRecipe = {
+      id: String(mockRecipes.length + 1),
+      title: formData.title,
+      author: "Zeynep Demir",
+      authorId: "current-user",
+      imageUrl: imagePreview || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=533&fit=crop",
+      description: formData.instructions.split('\n')[0],
+      ingredients: formData.ingredients.split('\n').filter(i => i.trim()),
+      steps: formData.instructions.split('\n').filter(i => i.trim()).map((step, idx) => ({
+        number: idx + 1,
+        description: step
+      })),
+      authorDetails: {
+        name: "Zeynep Demir",
+        recipeCount: 15,
+        avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop"
+      },
+      comments: []
+    };
+
+    // Save to localStorage
+    const existingRecipes = JSON.parse(localStorage.getItem('userRecipes') || '[]');
+    existingRecipes.push(newRecipe);
+    localStorage.setItem('userRecipes', JSON.stringify(existingRecipes));
+    
+    // Add to mockRecipes for immediate display
+    mockRecipes.push(newRecipe);
+
     toast.success("Tarifınız başarıyla paylaşıldı!");
     setTimeout(() => {
-      navigate("/");
+      navigate("/explore");
     }, 1500);
   };
 
@@ -157,20 +201,47 @@ const AddRecipe = () => {
             </div>
 
             <div className="flex flex-col p-4">
-              <div className="flex flex-col items-center gap-6 rounded-lg border-2 border-dashed border-border px-6 py-14">
-                <div className="flex max-w-[480px] flex-col items-center gap-2">
-                  <p className="text-foreground text-lg font-bold leading-tight tracking-[-0.015em] max-w-[480px] text-center">
-                    Fotoğrafları Yükle
-                  </p>
-                  <p className="text-foreground text-sm font-normal leading-normal max-w-[480px] text-center">
-                    Tarifiniz için fotoğraflar yükleyin
-                  </p>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageChange}
+              />
+              {imagePreview ? (
+                <div className="relative rounded-lg border-2 border-border overflow-hidden">
+                  <img src={imagePreview} alt="Preview" className="w-full h-64 object-cover" />
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="icon"
+                    className="absolute top-2 right-2"
+                    onClick={() => setImagePreview("")}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
                 </div>
-                <Button type="button" variant="secondary" className="gap-2">
-                  <Upload className="h-4 w-4" />
-                  <span>Fotoğrafları Seç</span>
-                </Button>
-              </div>
+              ) : (
+                <div className="flex flex-col items-center gap-6 rounded-lg border-2 border-dashed border-border px-6 py-14">
+                  <div className="flex max-w-[480px] flex-col items-center gap-2">
+                    <p className="text-foreground text-lg font-bold leading-tight tracking-[-0.015em] max-w-[480px] text-center">
+                      Fotoğrafları Yükle
+                    </p>
+                    <p className="text-foreground text-sm font-normal leading-normal max-w-[480px] text-center">
+                      Tarifiniz için fotoğraflar yükleyin
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="gap-2"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <Upload className="h-4 w-4" />
+                    <span>Fotoğrafları Seç</span>
+                  </Button>
+                </div>
+              )}
             </div>
 
             <div className="flex px-4 py-3 justify-end">

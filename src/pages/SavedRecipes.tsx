@@ -44,6 +44,19 @@ const mockSavedRecipes: SavedRecipe[] = [
 ];
 
 const SavedRecipes = () => {
+  const [savedRecipes, setSavedRecipes] = useState<Recipe[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    const savedIds = JSON.parse(localStorage.getItem('savedRecipes') || '[]');
+    const recipes = savedIds.map((id: string) => getRecipeById(id)).filter(Boolean);
+    setSavedRecipes(recipes);
+  }, []);
+
+  const filteredRecipes = savedRecipes.filter(recipe =>
+    recipe.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />

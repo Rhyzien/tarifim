@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import Header from "@/components/Header";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -12,36 +12,39 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { getRecipeById } from "@/data/mockRecipes";
-
-interface Comment {
-  id: string;
-  author: string;
-  avatarUrl: string;
-  text: string;
-  time: string;
-}
+import { getRecipeById, Comment } from "@/data/mockRecipes";
+import { toast } from "sonner";
 
 const RecipeDetail = () => {
   const { id } = useParams();
   const recipe = getRecipeById(id || "");
-  const [comments, setComments] = useState<Comment[]>([
-    {
-      id: "1",
-      author: "Elif Can",
-      avatarUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop",
-      text: "Harika görünüyor! Deneyeceğim mutlaka.",
-      time: "2 saat önce"
-    },
-    {
-      id: "2",
-      author: "Mehmet Demir",
-      avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop",
-      text: "Ben denedim çok lezzetli oldu, teşekkürler!",
-      time: "5 saat önce"
-    }
-  ]);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
+  const [isSaved, setIsSaved] = useState(false);
+
+  useEffect(() => {
+    if (recipe) {
+      setComments(recipe.comments);
+      // Check if recipe is saved
+      const savedRecipes = JSON.parse(localStorage.getItem('savedRecipes') || '[]');
+      setIsSaved(savedRecipes.includes(id));
+    }
+  }, [recipe, id]);
+
+  const handleSaveRecipe = () => {
+    const savedRecipes = JSON.parse(localStorage.getItem('savedRecipes') || '[]');
+    if (isSaved) {
+      const updated = savedRecipes.filter((recipeId: string) => recipeId !== id);
+      localStorage.setItem('savedRecipes', JSON.stringify(updated));
+      setIsSaved(false);
+      toast.success("Tarif kayıtlılardan çıkarıldı");
+    } else {
+      savedRecipes.push(id);
+      localStorage.setItem('savedRecipes', JSON.stringify(savedRecipes));
+      setIsSaved(true);
+      toast.success("Tarif kaydedildi!");
+    }
+  };
 
   if (!recipe) {
     return (
@@ -147,7 +150,7 @@ const RecipeDetail = () => {
           <h2 className="text-foreground text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">
             Yazar
           </h2>
-          <Link to="/profile" className="flex items-center gap-4 px-4 min-h-[72px] py-2 hover:bg-muted/50 transition-colors rounded-lg cursor-pointer">
+          <Link to={`/profile/${recipe.authorId}`} className="flex items-center gap-4 px-4 min-h-[72px] py-2 hover:bg-muted/50 transition-colors rounded-lg cursor-pointer">
             <div
               className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-14 w-14 shrink-0"
               style={{ backgroundImage: `url("${recipe.authorDetails.avatarUrl}")` }}
@@ -164,10 +167,14 @@ const RecipeDetail = () => {
 
           {/* Action Buttons */}
           <div className="flex gap-3 px-4 py-3">
-            <Button variant="secondary" className="flex-1 sm:flex-none">
-              Kaydet
+            <Button 
+              variant="secondary" 
+              className="flex-1 sm:flex-none"
+              onClick={handleSaveRecipe}
+            >
+              {isSaved ? "Kaydedildi ✓" : "Kaydet"}
             </Button>
-            <Button className="flex-1 sm:flex-none bg-accent hover:bg-accent/90 text-accent-foreground">
+            <Button className="flex-1 sm:flex-none bg-[#11d452] hover:bg-[#11d452]/90 text-[#111813]">
               Paylaş
             </Button>
           </div>

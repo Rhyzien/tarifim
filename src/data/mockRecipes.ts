@@ -1,7 +1,16 @@
+export interface Comment {
+  id: string;
+  author: string;
+  avatarUrl: string;
+  text: string;
+  time: string;
+}
+
 export interface Recipe {
   id: string;
   title: string;
   author: string;
+  authorId: string;
   imageUrl: string;
   description: string;
   ingredients: string[];
@@ -11,6 +20,7 @@ export interface Recipe {
     recipeCount: number;
     avatarUrl: string;
   };
+  comments: Comment[];
 }
 
 export const mockRecipes: Recipe[] = [
@@ -18,6 +28,7 @@ export const mockRecipes: Recipe[] = [
     id: "1",
     title: "Fesleğenli Domatesli Makarna",
     author: "Ayşe Yılmaz",
+    authorId: "ayse-yilmaz",
     imageUrl: "https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=800&h=533&fit=crop",
     description: "Taze fesleğen ve domates sosuyla hazırlanan bu İtalyan klasiği, hem hızlı hem de lezzetli bir akşam yemeği seçeneğidir.",
     ingredients: [
@@ -41,12 +52,22 @@ export const mockRecipes: Recipe[] = [
       name: "Ayşe Yılmaz",
       recipeCount: 24,
       avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop"
-    }
+    },
+    comments: [
+      {
+        id: "1",
+        author: "Mehmet Demir",
+        avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop",
+        text: "Harika bir tarif! Ailecek çok beğendik.",
+        time: "2 saat önce"
+      }
+    ]
   },
   {
     id: "2",
     title: "Akdeniz Yeşillikleri Salatası",
     author: "Mehmet Demir",
+    authorId: "mehmet-demir",
     imageUrl: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&h=533&fit=crop",
     description: "Taze sebzeler ve zeytinyağlı sos ile hazırlanan sağlıklı ve hafif bir salata tarifi.",
     ingredients: [
@@ -69,12 +90,22 @@ export const mockRecipes: Recipe[] = [
       name: "Mehmet Demir",
       recipeCount: 18,
       avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop"
-    }
+    },
+    comments: [
+      {
+        id: "1",
+        author: "Elif Can",
+        avatarUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop",
+        text: "Çok taze ve lezzetli görünüyor!",
+        time: "3 saat önce"
+      }
+    ]
   },
   {
     id: "3",
     title: "Mercimek Çorbası",
     author: "Elif Kaya",
+    authorId: "elif-kaya",
     imageUrl: "https://images.unsplash.com/photo-1547592166-23ac45744acd?w=800&h=533&fit=crop",
     description: "Türk mutfağının vazgeçilmez klasiği, besleyici ve lezzetli mercimek çorbası tarifi.",
     ingredients: [
@@ -97,12 +128,22 @@ export const mockRecipes: Recipe[] = [
       name: "Elif Kaya",
       recipeCount: 32,
       avatarUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop"
-    }
+    },
+    comments: [
+      {
+        id: "1",
+        author: "Ayşe Yılmaz",
+        avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop",
+        text: "Bu tarifi denedim, çok güzel oldu!",
+        time: "1 gün önce"
+      }
+    ]
   },
   {
     id: "4",
     title: "Kremalı Mantarlı Tavuk",
     author: "Ayşe Yılmaz",
+    authorId: "ayse-yilmaz",
     imageUrl: "https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=800&h=533&fit=crop",
     description: "Kremalı mantar sosu ile pişirilmiş yumuşacık tavuk göğüsleri. Akşam yemekleri için mükemmel bir seçenek.",
     ingredients: [
@@ -125,12 +166,14 @@ export const mockRecipes: Recipe[] = [
       name: "Ayşe Yılmaz",
       recipeCount: 24,
       avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop"
-    }
+    },
+    comments: []
   },
   {
     id: "5",
     title: "Fırında Sebzeli Kuzu",
     author: "Mehmet Demir",
+    authorId: "mehmet-demir",
     imageUrl: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=533&fit=crop",
     description: "Özel günler için ideal, fırında yavaş pişirilmiş sebzeli kuzu eti tarifi.",
     ingredients: [
@@ -153,12 +196,22 @@ export const mockRecipes: Recipe[] = [
       name: "Mehmet Demir",
       recipeCount: 18,
       avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop"
-    }
+    },
+    comments: [
+      {
+        id: "1",
+        author: "Zeynep Can",
+        avatarUrl: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=100&h=100&fit=crop",
+        text: "Misafirlerimize yaptım, çok övgü aldım!",
+        time: "2 gün önce"
+      }
+    ]
   },
   {
     id: "6",
     title: "Zeytinyağlı Enginar",
     author: "Elif Kaya",
+    authorId: "elif-kaya",
     imageUrl: "https://images.unsplash.com/photo-1505253716362-afaea1d3d1af?w=800&h=533&fit=crop",
     description: "Türk mutfağının vazgeçilmezi, limonlu zeytinyağlı enginar tarifi.",
     ingredients: [
@@ -181,12 +234,14 @@ export const mockRecipes: Recipe[] = [
       name: "Elif Kaya",
       recipeCount: 32,
       avatarUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop"
-    }
+    },
+    comments: []
   },
   {
     id: "7",
     title: "Ispanaklı Kiş",
     author: "Zeynep Can",
+    authorId: "zeynep-can",
     imageUrl: "https://images.unsplash.com/photo-1619096252214-ef06c45683e3?w=800&h=533&fit=crop",
     description: "Fransız mutfağından gelen, kahvaltı ve brunch için harika bir seçenek.",
     ingredients: [
@@ -209,12 +264,14 @@ export const mockRecipes: Recipe[] = [
       name: "Zeynep Can",
       recipeCount: 15,
       avatarUrl: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=150&h=150&fit=crop"
-    }
+    },
+    comments: []
   },
   {
     id: "8",
     title: "Mısır Unlu Ekmek",
     author: "Ahmet Öztürk",
+    authorId: "ahmet-ozturk",
     imageUrl: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&h=533&fit=crop",
     description: "Evde kolayca yapabileceğiniz, glutensiz mısır unundan ekmek tarifi.",
     ingredients: [
@@ -237,12 +294,14 @@ export const mockRecipes: Recipe[] = [
       name: "Ahmet Öztürk",
       recipeCount: 21,
       avatarUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop"
-    }
+    },
+    comments: []
   },
   {
     id: "9",
     title: "Yeşil Smoothie",
     author: "Selin Arslan",
+    authorId: "selin-arslan",
     imageUrl: "https://images.unsplash.com/photo-1610970881699-44a5587cabec?w=800&h=533&fit=crop",
     description: "Detoks yapmak isteyenler için vitamin deposu yeşil smoothie tarifi.",
     ingredients: [
@@ -263,12 +322,14 @@ export const mockRecipes: Recipe[] = [
       name: "Selin Arslan",
       recipeCount: 28,
       avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop"
-    }
+    },
+    comments: []
   },
   {
     id: "10",
     title: "Avokado Tost",
     author: "Canan Aksoy",
+    authorId: "canan-aksoy",
     imageUrl: "https://images.unsplash.com/photo-1541519227354-08fa5d50c44d?w=800&h=533&fit=crop",
     description: "Kahvaltının yeni gözdesi, avokadolu tost tarifi. Hem sağlıklı hem doyurucu.",
     ingredients: [
@@ -290,12 +351,14 @@ export const mockRecipes: Recipe[] = [
       name: "Canan Aksoy",
       recipeCount: 19,
       avatarUrl: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=150&h=150&fit=crop"
-    }
+    },
+    comments: []
   },
   {
     id: "11",
     title: "Chia Puding",
     author: "Emre Güven",
+    authorId: "emre-guven",
     imageUrl: "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=800&h=533&fit=crop",
     description: "Omega-3 deposu chia tohumlu puding. Sağlıklı bir atıştırmalık ya da kahvaltı.",
     ingredients: [
@@ -317,12 +380,14 @@ export const mockRecipes: Recipe[] = [
       name: "Emre Güven",
       recipeCount: 16,
       avatarUrl: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop"
-    }
+    },
+    comments: []
   },
   {
     id: "12",
     title: "Yeşil Çaylı Kurabiye",
     author: "Deniz Yıldız",
+    authorId: "deniz-yildiz",
     imageUrl: "https://images.unsplash.com/photo-1499636136210-6f4ee915583e?w=800&h=533&fit=crop",
     description: "Antioksidan kaynağı yeşil çay içeren, çay saatlerinin vazgeçilmez kurabiyesi.",
     ingredients: [
@@ -345,10 +410,70 @@ export const mockRecipes: Recipe[] = [
       name: "Deniz Yıldız",
       recipeCount: 23,
       avatarUrl: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=150&h=150&fit=crop"
-    }
+    },
+    comments: []
   }
 ];
 
 export const getRecipeById = (id: string): Recipe | undefined => {
   return mockRecipes.find(recipe => recipe.id === id);
+};
+
+// Kullanıcı profili için mock data
+export interface UserProfile {
+  id: string;
+  name: string;
+  bio: string;
+  avatarUrl: string;
+  recipeCount: number;
+  followersCount: number;
+  followingCount: number;
+  recipes: Recipe[];
+}
+
+export const mockUsers: { [key: string]: UserProfile } = {
+  "ayse-yilmaz": {
+    id: "ayse-yilmaz",
+    name: "Ayşe Yılmaz",
+    bio: "Yemek yapmayı seven ve yeni tarifler denemeyi seven bir gurme. Farklı kültürlere ait tarifleri keşfetmek en büyük tutkum.",
+    avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop",
+    recipeCount: 24,
+    followersCount: 500,
+    followingCount: 250,
+    recipes: mockRecipes.filter(r => r.authorId === "ayse-yilmaz")
+  },
+  "mehmet-demir": {
+    id: "mehmet-demir",
+    name: "Mehmet Demir",
+    bio: "Geleneksel Türk mutfağını modern dokunuşlarla birleştirmeyi seviyorum.",
+    avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop",
+    recipeCount: 18,
+    followersCount: 320,
+    followingCount: 180,
+    recipes: mockRecipes.filter(r => r.authorId === "mehmet-demir")
+  },
+  "elif-kaya": {
+    id: "elif-kaya",
+    name: "Elif Kaya",
+    bio: "Sağlıklı beslenme ve organik yemek konusunda tutkulu bir aşçı.",
+    avatarUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop",
+    recipeCount: 32,
+    followersCount: 680,
+    followingCount: 310,
+    recipes: mockRecipes.filter(r => r.authorId === "elif-kaya")
+  },
+  "current-user": {
+    id: "current-user",
+    name: "Zeynep Demir",
+    bio: "Yemek yapmayı ve yeni lezzetler denemeyi seven bir gurme. Farklı kültürlere ait tarifleri keşfetmek ve kendi yorumlarımla sunmak en büyük tutkum.",
+    avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop",
+    recipeCount: 15,
+    followersCount: 500,
+    followingCount: 250,
+    recipes: []
+  }
+};
+
+export const getUserProfile = (userId: string): UserProfile | undefined => {
+  return mockUsers[userId];
 };
