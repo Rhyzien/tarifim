@@ -111,6 +111,36 @@ const RecipeDetail = () => {
             </div>
           </div>
 
+          {/* Recipe Info */}
+          {(recipe.prepTime || recipe.cookTime || recipe.servings || recipe.category) && (
+            <div className="flex flex-wrap gap-4 px-4 py-3 bg-muted/30 rounded-lg mx-4">
+              {recipe.prepTime && (
+                <div className="flex flex-col">
+                  <span className="text-muted-foreground text-xs font-medium">Hazırlık Süresi</span>
+                  <span className="text-foreground text-sm font-semibold">{recipe.prepTime} dk</span>
+                </div>
+              )}
+              {recipe.cookTime && (
+                <div className="flex flex-col">
+                  <span className="text-muted-foreground text-xs font-medium">Pişirme Süresi</span>
+                  <span className="text-foreground text-sm font-semibold">{recipe.cookTime} dk</span>
+                </div>
+              )}
+              {recipe.servings && (
+                <div className="flex flex-col">
+                  <span className="text-muted-foreground text-xs font-medium">Porsiyon</span>
+                  <span className="text-foreground text-sm font-semibold">{recipe.servings} kişilik</span>
+                </div>
+              )}
+              {recipe.category && (
+                <div className="flex flex-col">
+                  <span className="text-muted-foreground text-xs font-medium">Kategori</span>
+                  <span className="text-foreground text-sm font-semibold capitalize">{recipe.category.replace('-', ' ')}</span>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Ingredients */}
           <h2 className="text-foreground text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">
             Malzemeler

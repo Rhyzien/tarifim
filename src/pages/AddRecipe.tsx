@@ -52,6 +52,10 @@ const AddRecipe = () => {
         number: idx + 1,
         description: step
       })),
+      prepTime: formData.prepTime,
+      cookTime: formData.cookTime,
+      servings: formData.servings,
+      category: formData.category,
       authorDetails: {
         name: "Zeynep Demir",
         recipeCount: 15,

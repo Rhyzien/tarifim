@@ -1,9 +1,40 @@
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Header = () => {
   const navigate = useNavigate();
+  const [avatarUrl, setAvatarUrl] = useState("https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop");
+
+  useEffect(() => {
+    // Load avatar from localStorage
+    const savedSettings = localStorage.getItem('userSettings_current-user');
+    if (savedSettings) {
+      const parsed = JSON.parse(savedSettings);
+      if (parsed.avatarUrl) {
+        setAvatarUrl(parsed.avatarUrl);
+      }
+    }
+
+    // Listen for avatar updates
+    const handleAvatarUpdate = () => {
+      const savedSettings = localStorage.getItem('userSettings_current-user');
+      if (savedSettings) {
+        const parsed = JSON.parse(savedSettings);
+        if (parsed.avatarUrl) {
+          setAvatarUrl(parsed.avatarUrl);
+        }
+      }
+    };
+
+    window.addEventListener('avatarUpdated', handleAvatarUpdate);
+    window.addEventListener('storage', handleAvatarUpdate);
+    return () => {
+      window.removeEventListener('avatarUpdated', handleAvatarUpdate);
+      window.removeEventListener('storage', handleAvatarUpdate);
+    };
+  }, []);
 
   return (
     <header className="flex items-center justify-between whitespace-nowrap border-b border-border px-10 py-3 bg-background">
@@ -46,7 +77,7 @@ const Header = () => {
           onClick={() => navigate('/profile')}
           className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 cursor-pointer hover:ring-2 hover:ring-accent transition-all"
           style={{
-            backgroundImage: 'url("https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop")'
+            backgroundImage: `url("${avatarUrl}")`
           }}
         />
       </div>

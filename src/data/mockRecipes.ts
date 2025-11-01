@@ -15,6 +15,10 @@ export interface Recipe {
   description: string;
   ingredients: string[];
   steps: { number: number; description: string }[];
+  prepTime?: string;
+  cookTime?: string;
+  servings?: string;
+  category?: string;
   authorDetails: {
     name: string;
     recipeCount: number;
@@ -31,6 +35,10 @@ export const mockRecipes: Recipe[] = [
     authorId: "ayse-yilmaz",
     imageUrl: "https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=800&h=533&fit=crop",
     description: "Taze fesleğen ve domates sosuyla hazırlanan bu İtalyan klasiği, hem hızlı hem de lezzetli bir akşam yemeği seçeneğidir.",
+    prepTime: "15",
+    cookTime: "20",
+    servings: "4",
+    category: "ana-yemek",
     ingredients: [
       "400 gr spagetti",
       "500 gr cherry domates",
