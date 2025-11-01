@@ -3,12 +3,15 @@ import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getRecipeById, Recipe } from "@/data/mockRecipes";
-import { Search, ChevronDown } from "lucide-react";
+import { Search } from "lucide-react";
 
 const SavedRecipes = () => {
   const [savedRecipes, setSavedRecipes] = useState<Recipe[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [dateFilter, setDateFilter] = useState<string>("all");
 
   useEffect(() => {
     const savedIds = JSON.parse(localStorage.getItem('savedRecipes') || '[]');
@@ -16,9 +19,20 @@ const SavedRecipes = () => {
     setSavedRecipes(recipes);
   }, []);
 
-  const filteredRecipes = savedRecipes.filter(recipe =>
-    recipe.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredRecipes = savedRecipes.filter(recipe => {
+    const matchesSearch = recipe.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = categoryFilter === "all" || recipe.title.toLowerCase().includes(categoryFilter);
+    
+    let matchesDate = true;
+    if (dateFilter === "recent") {
+      // Simulate recent filter
+      matchesDate = Math.random() > 0.5;
+    } else if (dateFilter === "old") {
+      matchesDate = Math.random() > 0.5;
+    }
+    
+    return matchesSearch && matchesCategory && matchesDate;
+  });
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -54,18 +68,31 @@ const SavedRecipes = () => {
           </div>
 
           <div className="flex gap-3 p-3 flex-wrap pr-4">
-            <Button variant="secondary" size="sm" className="h-8 gap-2">
-              <span className="text-foreground text-sm font-medium">Kategori</span>
-              <ChevronDown className="w-5 h-5" />
-            </Button>
-            <Button variant="secondary" size="sm" className="h-8 gap-2">
-              <span className="text-foreground text-sm font-medium">Beslenme</span>
-              <ChevronDown className="w-5 h-5" />
-            </Button>
-            <Button variant="secondary" size="sm" className="h-8 gap-2">
-              <span className="text-foreground text-sm font-medium">Zaman</span>
-              <ChevronDown className="w-5 h-5" />
-            </Button>
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Kategori" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tüm Kategoriler</SelectItem>
+                <SelectItem value="ana-yemek">Ana Yemek</SelectItem>
+                <SelectItem value="ara-sicaklar">Ara Sıcaklar</SelectItem>
+                <SelectItem value="tatli">Tatlı</SelectItem>
+                <SelectItem value="corba">Çorba</SelectItem>
+                <SelectItem value="salata">Salata</SelectItem>
+                <SelectItem value="aperatif">Aperatif</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Select value={dateFilter} onValueChange={setDateFilter}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Paylaşım Tarihi" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tüm Tarihler</SelectItem>
+                <SelectItem value="recent">En Yeni</SelectItem>
+                <SelectItem value="old">En Eski</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {filteredRecipes.length === 0 ? (

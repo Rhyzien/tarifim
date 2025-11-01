@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import ShareDialog from "@/components/ShareDialog";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -21,6 +22,7 @@ const RecipeDetail = () => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [isSaved, setIsSaved] = useState(false);
+  const [isShareOpen, setIsShareOpen] = useState(false);
 
   useEffect(() => {
     if (recipe) {
@@ -113,38 +115,25 @@ const RecipeDetail = () => {
           <h2 className="text-foreground text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">
             Malzemeler
           </h2>
-          <div className="px-4 space-y-3">
+          <ul className="px-4 space-y-3 list-disc list-inside">
             {recipe.ingredients.map((ingredient, index) => (
-              <label key={index} className="flex gap-x-3 items-start cursor-pointer">
-                <Checkbox className="mt-0.5" />
-                <p className="text-foreground text-base font-normal leading-normal">
-                  {ingredient}
-                </p>
-              </label>
+              <li key={index} className="text-foreground text-base font-normal leading-normal">
+                {ingredient}
+              </li>
             ))}
-          </div>
+          </ul>
 
           {/* Recipe Steps */}
           <h2 className="text-foreground text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">
             Tarif
           </h2>
-          <div className="space-y-2">
+          <ol className="px-4 space-y-4 list-decimal list-inside">
             {recipe.steps.map((step) => (
-              <div key={step.number} className="flex items-center gap-4 px-4 min-h-[72px] py-2">
-                <div className="flex items-center justify-center rounded-lg bg-secondary shrink-0 size-12">
-                  <span className="text-foreground text-lg font-medium">{step.number}</span>
-                </div>
-                <div className="flex flex-col justify-center">
-                  <p className="text-foreground text-base font-medium leading-normal">
-                    {step.number}. Adım
-                  </p>
-                  <p className="text-muted-foreground text-sm font-normal leading-normal">
-                    {step.description}
-                  </p>
-                </div>
-              </div>
+              <li key={step.number} className="text-foreground text-base font-normal leading-normal pl-2">
+                {step.description}
+              </li>
             ))}
-          </div>
+          </ol>
 
           {/* Author */}
           <h2 className="text-foreground text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">
@@ -174,10 +163,21 @@ const RecipeDetail = () => {
             >
               {isSaved ? "Kaydedildi ✓" : "Kaydet"}
             </Button>
-            <Button className="flex-1 sm:flex-none bg-[#11d452] hover:bg-[#11d452]/90 text-[#111813]">
+            <Button 
+              className="flex-1 sm:flex-none bg-[#11d452] hover:bg-[#11d452]/90 text-[#111813]"
+              onClick={() => setIsShareOpen(true)}
+            >
               Paylaş
             </Button>
           </div>
+
+          {/* Share Dialog */}
+          <ShareDialog 
+            isOpen={isShareOpen}
+            onClose={() => setIsShareOpen(false)}
+            recipeTitle={recipe.title}
+            recipeId={recipe.id}
+          />
 
           {/* Comments Section */}
           <div className="mt-8">

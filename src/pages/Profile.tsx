@@ -1,12 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useParams } from "react-router-dom";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getUserProfile, mockUsers } from "@/data/mockRecipes";
 import { toast } from "sonner";
+import { Upload, X } from "lucide-react";
 
 const Profile = () => {
   const { userId } = useParams();
@@ -17,11 +19,16 @@ const Profile = () => {
   const userProfile = getUserProfile(profileUserId);
   const [activeTab, setActiveTab] = useState("recipes");
   const [isFollowing, setIsFollowing] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [avatarPreview, setAvatarPreview] = useState("");
   
   // Settings state
   const [settings, setSettings] = useState({
     name: userProfile?.name || "",
     bio: userProfile?.bio || "",
+    avatarUrl: userProfile?.avatarUrl || "",
+    darkMode: false,
+    themeColor: "#11d452",
     emailNotifications: true,
     recipeNotifications: true,
     privateAccount: false,
@@ -29,19 +36,80 @@ const Profile = () => {
 
   useEffect(() => {
     if (userProfile) {
-      setSettings({
-        name: userProfile.name,
-        bio: userProfile.bio,
-        emailNotifications: true,
-        recipeNotifications: true,
-        privateAccount: false,
-      });
+      // Load saved settings from localStorage
+      const savedSettings = localStorage.getItem(`userSettings_${currentUserId}`);
+      if (savedSettings) {
+        const parsed = JSON.parse(savedSettings);
+        setSettings(parsed);
+        setAvatarPreview(parsed.avatarUrl || userProfile.avatarUrl);
+        
+        // Apply theme settings
+        if (parsed.darkMode) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+        
+        // Apply theme color
+        if (parsed.themeColor) {
+          document.documentElement.style.setProperty('--accent', hexToHSL(parsed.themeColor));
+        }
+      } else {
+        setSettings({
+          name: userProfile.name,
+          bio: userProfile.bio,
+          avatarUrl: userProfile.avatarUrl,
+          darkMode: false,
+          themeColor: "#11d452",
+          emailNotifications: true,
+          recipeNotifications: true,
+          privateAccount: false,
+        });
+        setAvatarPreview(userProfile.avatarUrl);
+      }
     }
     
     // Check if following
     const following = JSON.parse(localStorage.getItem('following') || '[]');
     setIsFollowing(following.includes(profileUserId));
   }, [userProfile, profileUserId]);
+
+  const hexToHSL = (hex: string) => {
+    // Convert hex to RGB
+    const r = parseInt(hex.slice(1, 3), 16) / 255;
+    const g = parseInt(hex.slice(3, 5), 16) / 255;
+    const b = parseInt(hex.slice(5, 7), 16) / 255;
+
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    let h = 0, s = 0, l = (max + min) / 2;
+
+    if (max !== min) {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      
+      switch (max) {
+        case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+        case g: h = ((b - r) / d + 2) / 6; break;
+        case b: h = ((r - g) / d + 4) / 6; break;
+      }
+    }
+
+    return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+  };
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        setAvatarPreview(result);
+        setSettings({ ...settings, avatarUrl: result });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleFollow = () => {
     const following = JSON.parse(localStorage.getItem('following') || '[]');
@@ -62,7 +130,18 @@ const Profile = () => {
   const handleSaveSettings = () => {
     // Save settings to localStorage
     localStorage.setItem(`userSettings_${currentUserId}`, JSON.stringify(settings));
-    toast.success("Ayarlar kaydedildi!");
+    
+    // Apply dark mode
+    if (settings.darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    
+    // Apply theme color
+    document.documentElement.style.setProperty('--accent', hexToHSL(settings.themeColor));
+    
+    toast.success("Ayarlar kaydedildi ve uygulandı!");
   };
 
   if (!userProfile) {
@@ -95,7 +174,7 @@ const Profile = () => {
               <div className="flex gap-4 flex-col items-center">
                 <div
                   className="bg-center bg-no-repeat aspect-square bg-cover rounded-full min-h-32 w-32"
-                  style={{ backgroundImage: `url("${userProfile.avatarUrl}")` }}
+                  style={{ backgroundImage: `url("${avatarPreview || userProfile.avatarUrl}")` }}
                 />
                 <div className="flex flex-col items-center justify-center">
                   <p className="text-foreground text-[22px] font-bold leading-tight tracking-[-0.015em] text-center">
@@ -253,6 +332,31 @@ const Profile = () => {
             <div className="flex flex-col gap-6 p-4 max-w-[600px]">
               <div className="flex flex-col gap-4">
                 <h3 className="text-foreground text-lg font-bold">Profil Ayarları</h3>
+                
+                <div className="flex flex-col gap-2">
+                  <label className="text-foreground text-sm font-medium">Profil Resmi</label>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleAvatarChange}
+                  />
+                  <div className="flex items-center gap-4">
+                    <div
+                      className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-20 w-20"
+                      style={{ backgroundImage: `url("${avatarPreview}")` }}
+                    />
+                    <Button
+                      variant="secondary"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      Resim Değiştir
+                    </Button>
+                  </div>
+                </div>
+                
                 <div className="flex flex-col gap-2">
                   <label className="text-foreground text-sm font-medium">İsim</label>
                   <Input
@@ -267,6 +371,35 @@ const Profile = () => {
                     onChange={(e) => setSettings({ ...settings, bio: e.target.value })}
                     className="min-h-[100px]"
                   />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-4">
+                <h3 className="text-foreground text-lg font-bold">Görünüm</h3>
+                <div className="flex items-center justify-between">
+                  <label className="text-foreground text-sm">Karanlık Tema</label>
+                  <Checkbox
+                    checked={settings.darkMode}
+                    onCheckedChange={(checked) =>
+                      setSettings({ ...settings, darkMode: checked as boolean })
+                    }
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="text-foreground text-sm font-medium">Tema Rengi</label>
+                  <Select value={settings.themeColor} onValueChange={(value) => setSettings({ ...settings, themeColor: value })}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="#11d452">Yeşil (Varsayılan)</SelectItem>
+                      <SelectItem value="#3b82f6">Mavi</SelectItem>
+                      <SelectItem value="#ef4444">Kırmızı</SelectItem>
+                      <SelectItem value="#f59e0b">Turuncu</SelectItem>
+                      <SelectItem value="#8b5cf6">Mor</SelectItem>
+                      <SelectItem value="#ec4899">Pembe</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 

@@ -11,20 +11,27 @@ const Explore = () => {
   const itemsPerLoad = 4;
 
   useEffect(() => {
-    // Load user recipes from localStorage
+    // Initial load
     const userRecipes = JSON.parse(localStorage.getItem('userRecipes') || '[]');
     const allRecipes = [...userRecipes, ...mockRecipes];
     setDisplayedRecipes(allRecipes.slice(0, itemsPerLoad));
+  }, []);
 
+  useEffect(() => {
     const loadMore = () => {
-      if (isLoading) return;
-      setIsLoading(true);
+      const userRecipes = JSON.parse(localStorage.getItem('userRecipes') || '[]');
+      const allRecipes = [...userRecipes, ...mockRecipes];
       
+      if (displayedRecipes.length >= allRecipes.length) {
+        return; // No more items to load
+      }
+      
+      setIsLoading(true);
       setTimeout(() => {
-        const userRecipes = JSON.parse(localStorage.getItem('userRecipes') || '[]');
-        const allRecipes = [...userRecipes, ...mockRecipes];
         const newItems = allRecipes.slice(displayedRecipes.length, displayedRecipes.length + itemsPerLoad);
-        setDisplayedRecipes(prev => [...prev, ...newItems]);
+        if (newItems.length > 0) {
+          setDisplayedRecipes(prev => [...prev, ...newItems]);
+        }
         setIsLoading(false);
       }, 500);
     };
@@ -43,7 +50,7 @@ const Explore = () => {
     }
 
     return () => observer.disconnect();
-  }, [displayedRecipes.length, isLoading]);
+  }, [displayedRecipes, isLoading]);
 
   return (
     <div className="min-h-screen flex flex-col bg-background">

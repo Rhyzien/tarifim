@@ -16,6 +16,7 @@ const AddRecipe = () => {
   const [imagePreview, setImagePreview] = useState<string>("");
   const [formData, setFormData] = useState({
     title: "",
+    description: "",
     ingredients: "",
     instructions: "",
     prepTime: "",
@@ -45,7 +46,7 @@ const AddRecipe = () => {
       author: "Zeynep Demir",
       authorId: "current-user",
       imageUrl: imagePreview || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=533&fit=crop",
-      description: formData.instructions.split('\n')[0],
+      description: formData.description,
       ingredients: formData.ingredients.split('\n').filter(i => i.trim()),
       steps: formData.instructions.split('\n').filter(i => i.trim()).map((step, idx) => ({
         number: idx + 1,
@@ -102,8 +103,24 @@ const AddRecipe = () => {
 
             <div className="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
               <div className="flex flex-col min-w-40 flex-1">
+                <Label htmlFor="description" className="text-foreground text-base font-medium leading-normal pb-2">
+                  Açıklama
+                </Label>
+                <Textarea
+                  id="description"
+                  placeholder="Tarifiniz hakkında kısa bir açıklama"
+                  className="min-h-24"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
+              <div className="flex flex-col min-w-40 flex-1">
                 <Label htmlFor="ingredients" className="text-foreground text-base font-medium leading-normal pb-2">
-                  Malzemeler
+                  Malzemeler (Her satıra bir malzeme)
                 </Label>
                 <Textarea
                   id="ingredients"
@@ -119,7 +136,7 @@ const AddRecipe = () => {
             <div className="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
               <div className="flex flex-col min-w-40 flex-1">
                 <Label htmlFor="instructions" className="text-foreground text-base font-medium leading-normal pb-2">
-                  Talimatlar
+                  Talimatlar (Her satıra bir adım)
                 </Label>
                 <Textarea
                   id="instructions"
@@ -191,6 +208,7 @@ const AddRecipe = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="ana-yemek">Ana Yemek</SelectItem>
+                    <SelectItem value="ara-sicaklar">Ara Sıcaklar</SelectItem>
                     <SelectItem value="tatli">Tatlı</SelectItem>
                     <SelectItem value="corba">Çorba</SelectItem>
                     <SelectItem value="salata">Salata</SelectItem>
