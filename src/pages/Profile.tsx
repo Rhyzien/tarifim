@@ -189,13 +189,13 @@ const Profile = () => {
                 />
                 <div className="flex flex-col items-center justify-center">
                   <p className="text-foreground text-[22px] font-bold leading-tight tracking-[-0.015em] text-center">
-                    {userProfile.name}
+                    {profileData?.name || userProfile?.name || "Kullanıcı"}
                   </p>
                   <p className="text-muted-foreground text-base font-normal leading-normal text-center">
-                    {userProfile.bio}
+                    {profileData?.bio || userProfile?.bio || ""}
                   </p>
                   <p className="text-muted-foreground text-base font-normal leading-normal text-center">
-                    {userProfile.followersCount} takipçi • {userProfile.followingCount} takip
+                    {userProfile?.followersCount || 0} takipçi • {userProfile?.followingCount || 0} takip
                   </p>
                 </div>
               </div>
@@ -215,7 +215,7 @@ const Profile = () => {
           <div className="flex flex-wrap gap-3 px-4 py-3">
             <div className="flex min-w-[111px] flex-1 basis-[fit-content] flex-col gap-2 rounded-lg border border-border p-3 items-center text-center">
               <p className="text-foreground tracking-light text-2xl font-bold leading-tight">
-                {userProfile.recipeCount}
+                {userProfile?.recipeCount || 0}
               </p>
               <p className="text-muted-foreground text-sm font-normal leading-normal">Tarifler</p>
             </div>
@@ -281,7 +281,7 @@ const Profile = () => {
           {/* Tab Content */}
           {activeTab === "recipes" && (
             <div className="grid grid-cols-[repeat(auto-fit,minmax(158px,1fr))] gap-3 p-4">
-              {userProfile.recipes.map((recipe) => (
+              {(userProfile?.recipes || []).map((recipe) => (
                 <Link
                   key={recipe.id}
                   to={`/recipe/${recipe.id}`}
