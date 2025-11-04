@@ -2,37 +2,50 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 
 const Header = () => {
   const navigate = useNavigate();
   const [avatarUrl, setAvatarUrl] = useState("https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop");
 
   useEffect(() => {
-    // Load avatar from localStorage
-    const savedSettings = localStorage.getItem('userSettings_current-user');
-    if (savedSettings) {
-      const parsed = JSON.parse(savedSettings);
-      if (parsed.avatarUrl) {
-        setAvatarUrl(parsed.avatarUrl);
+    // Load avatar from database
+    const loadAvatar = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('avatar_url')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        
+        if (data?.avatar_url) {
+          setAvatarUrl(data.avatar_url);
+        }
       }
-    }
+    };
+
+    loadAvatar();
 
     // Listen for avatar updates
-    const handleAvatarUpdate = () => {
-      const savedSettings = localStorage.getItem('userSettings_current-user');
-      if (savedSettings) {
-        const parsed = JSON.parse(savedSettings);
-        if (parsed.avatarUrl) {
-          setAvatarUrl(parsed.avatarUrl);
+    const handleAvatarUpdate = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('avatar_url')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        
+        if (data?.avatar_url) {
+          setAvatarUrl(data.avatar_url);
         }
       }
     };
 
     window.addEventListener('avatarUpdated', handleAvatarUpdate);
-    window.addEventListener('storage', handleAvatarUpdate);
     return () => {
       window.removeEventListener('avatarUpdated', handleAvatarUpdate);
-      window.removeEventListener('storage', handleAvatarUpdate);
     };
   }, []);
 

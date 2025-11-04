@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,13 +7,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getUserProfile, mockUsers } from "@/data/mockRecipes";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Upload, X } from "lucide-react";
+import { Upload, LogOut } from "lucide-react";
 
 const Profile = () => {
   const { userId } = useParams();
-  const currentUserId = "current-user";
-  const profileUserId = userId || currentUserId;
+  const navigate = useNavigate();
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const profileUserId = userId || currentUserId || "";
   const isOwnProfile = profileUserId === currentUserId;
   
   const userProfile = getUserProfile(profileUserId);
@@ -21,12 +23,13 @@ const Profile = () => {
   const [isFollowing, setIsFollowing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [avatarPreview, setAvatarPreview] = useState("");
+  const [profileData, setProfileData] = useState<any>(null);
   
   // Settings state
   const [settings, setSettings] = useState({
-    name: userProfile?.name || "",
-    bio: userProfile?.bio || "",
-    avatarUrl: userProfile?.avatarUrl || "",
+    name: "",
+    bio: "",
+    avatarUrl: "",
     darkMode: false,
     emailNotifications: true,
     recipeNotifications: true,
@@ -34,38 +37,43 @@ const Profile = () => {
   });
 
   useEffect(() => {
-    if (userProfile) {
-      // Load saved settings from localStorage
-      const savedSettings = localStorage.getItem(`userSettings_${currentUserId}`);
-      if (savedSettings) {
-        const parsed = JSON.parse(savedSettings);
-        setSettings(parsed);
-        setAvatarPreview(parsed.avatarUrl || userProfile.avatarUrl);
+    // Get current user
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        setCurrentUserId(user.id);
         
-        // Apply theme settings
-        if (parsed.darkMode) {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
-      } else {
-        setSettings({
-          name: userProfile.name,
-          bio: userProfile.bio,
-          avatarUrl: userProfile.avatarUrl,
-          darkMode: false,
-          emailNotifications: true,
-          recipeNotifications: true,
-          privateAccount: false,
-        });
-        setAvatarPreview(userProfile.avatarUrl);
+        // Load profile from database
+        const loadProfile = async () => {
+          const targetUserId = userId || user.id;
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('user_id', targetUserId)
+            .maybeSingle();
+          
+          if (data) {
+            setProfileData(data);
+            setSettings({
+              name: data.name || "",
+              bio: data.bio || "",
+              avatarUrl: data.avatar_url || "",
+              darkMode: false,
+              emailNotifications: true,
+              recipeNotifications: true,
+              privateAccount: false,
+            });
+            setAvatarPreview(data.avatar_url || "");
+          }
+        };
+        
+        loadProfile();
       }
-    }
+    });
     
     // Check if following
     const following = JSON.parse(localStorage.getItem('following') || '[]');
     setIsFollowing(following.includes(profileUserId));
-  }, [userProfile, profileUserId]);
+  }, [userId, profileUserId]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -96,21 +104,38 @@ const Profile = () => {
     }
   };
 
-  const handleSaveSettings = () => {
-    // Save settings to localStorage
-    localStorage.setItem(`userSettings_${currentUserId}`, JSON.stringify(settings));
-    
-    // Apply dark mode
-    if (settings.darkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
+  const handleSaveSettings = async () => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          name: settings.name,
+          bio: settings.bio,
+          avatar_url: settings.avatarUrl,
+        })
+        .eq('user_id', currentUserId);
+      
+      if (error) throw error;
+      
+      // Apply dark mode
+      if (settings.darkMode) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+      
+      // Trigger custom event for header update
+      window.dispatchEvent(new Event('avatarUpdated'));
+      
+      toast.success("Ayarlar kaydedildi ve uygulandı!");
+    } catch (error: any) {
+      toast.error("Ayarlar kaydedilemedi: " + error.message);
     }
-    
-    // Trigger custom event for header update
-    window.dispatchEvent(new Event('avatarUpdated'));
-    
-    toast.success("Ayarlar kaydedildi ve uygulandı!");
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/auth");
   };
 
   if (!userProfile) {
@@ -143,7 +168,7 @@ const Profile = () => {
               <div className="flex gap-4 flex-col items-center">
                 <div
                   className="bg-center bg-no-repeat aspect-square bg-cover rounded-full min-h-32 w-32"
-                  style={{ backgroundImage: `url("${avatarPreview || userProfile.avatarUrl}")` }}
+                  style={{ backgroundImage: `url("${avatarPreview || profileData?.avatar_url || userProfile?.avatarUrl || 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=400'}")` }}
                 />
                 <div className="flex flex-col items-center justify-center">
                   <p className="text-foreground text-[22px] font-bold leading-tight tracking-[-0.015em] text-center">
@@ -391,9 +416,15 @@ const Profile = () => {
                 </div>
               </div>
 
-              <Button onClick={handleSaveSettings} className="bg-[#11d452] text-[#111813] hover:bg-[#11d452]/90">
-                Değişiklikleri Kaydet
-              </Button>
+              <div className="flex gap-3">
+                <Button onClick={handleSaveSettings} className="flex-1 bg-[#11d452] text-[#111813] hover:bg-[#11d452]/90">
+                  Değişiklikleri Kaydet
+                </Button>
+                <Button onClick={handleLogout} variant="destructive" className="flex gap-2">
+                  <LogOut className="h-4 w-4" />
+                  Çıkış Yap
+                </Button>
+              </div>
             </div>
           )}
         </div>
