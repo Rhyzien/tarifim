@@ -15,6 +15,7 @@ const Profile = () => {
   const { userId } = useParams();
   const navigate = useNavigate();
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const profileUserId = userId || currentUserId || "";
   const isOwnProfile = profileUserId === currentUserId;
   
@@ -38,42 +39,45 @@ const Profile = () => {
 
   useEffect(() => {
     // Get current user
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    const loadData = async () => {
+      setLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      
       if (user) {
         setCurrentUserId(user.id);
         
         // Load profile from database
-        const loadProfile = async () => {
-          const targetUserId = userId || user.id;
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('user_id', targetUserId)
-            .maybeSingle();
-          
-          if (data) {
-            setProfileData(data);
-            setSettings({
-              name: data.name || "",
-              bio: data.bio || "",
-              avatarUrl: data.avatar_url || "",
-              darkMode: false,
-              emailNotifications: true,
-              recipeNotifications: true,
-              privateAccount: false,
-            });
-            setAvatarPreview(data.avatar_url || "");
-          }
-        };
+        const targetUserId = userId || user.id;
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', targetUserId)
+          .maybeSingle();
         
-        loadProfile();
+        if (data) {
+          setProfileData(data);
+          setSettings({
+            name: data.name || "",
+            bio: data.bio || "",
+            avatarUrl: data.avatar_url || "",
+            darkMode: false,
+            emailNotifications: true,
+            recipeNotifications: true,
+            privateAccount: false,
+          });
+          setAvatarPreview(data.avatar_url || "");
+        }
+        
+        // Check if following
+        const following = JSON.parse(localStorage.getItem('following') || '[]');
+        setIsFollowing(following.includes(targetUserId));
       }
-    });
+      
+      setLoading(false);
+    };
     
-    // Check if following
-    const following = JSON.parse(localStorage.getItem('following') || '[]');
-    setIsFollowing(following.includes(profileUserId));
-  }, [userId, profileUserId]);
+    loadData();
+  }, [userId]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -138,7 +142,20 @@ const Profile = () => {
     navigate("/auth");
   };
 
-  if (!userProfile) {
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <Header />
+        <main className="flex-1 px-4 md:px-10 lg:px-40 py-5">
+          <div className="max-w-[960px] mx-auto text-center py-20">
+            <p className="text-muted-foreground">Yükleniyor...</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (!profileData && !userProfile) {
     return (
       <div className="min-h-screen flex flex-col bg-background">
         <Header />
