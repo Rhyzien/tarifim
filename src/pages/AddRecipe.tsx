@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Upload, X } from "lucide-react";
 import { toast } from "sonner";
-import { mockRecipes } from "@/data/mockRecipes";
+import { supabase } from "@/integrations/supabase/client";
 
 const AddRecipe = () => {
   const navigate = useNavigate();
@@ -36,46 +36,43 @@ const AddRecipe = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Create new recipe
-    const newRecipe = {
-      id: String(mockRecipes.length + 1),
-      title: formData.title,
-      author: "Zeynep Demir",
-      authorId: "current-user",
-      imageUrl: imagePreview || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=533&fit=crop",
-      description: formData.description,
-      ingredients: formData.ingredients.split('\n').filter(i => i.trim()),
-      steps: formData.instructions.split('\n').filter(i => i.trim()).map((step, idx) => ({
-        number: idx + 1,
-        description: step
-      })),
-      prepTime: formData.prepTime,
-      cookTime: formData.cookTime,
-      servings: formData.servings,
-      category: formData.category,
-      authorDetails: {
-        name: "Zeynep Demir",
-        recipeCount: 15,
-        avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop"
-      },
-      comments: []
-    };
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Tarif eklemek için giriş yapmalısınız");
+        return;
+      }
 
-    // Save to localStorage
-    const existingRecipes = JSON.parse(localStorage.getItem('userRecipes') || '[]');
-    existingRecipes.push(newRecipe);
-    localStorage.setItem('userRecipes', JSON.stringify(existingRecipes));
-    
-    // Add to mockRecipes for immediate display
-    mockRecipes.push(newRecipe);
+      const ingredients = formData.ingredients.split('\n').filter(i => i.trim());
+      const instructions = formData.instructions.split('\n').filter(i => i.trim());
 
-    toast.success("Tarifınız başarıyla paylaşıldı!");
-    setTimeout(() => {
-      navigate("/explore");
-    }, 1500);
+      const { error } = await supabase
+        .from('recipes')
+        .insert({
+          user_id: user.id,
+          title: formData.title,
+          description: formData.description,
+          image_url: imagePreview || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=533&fit=crop",
+          prep_time: formData.prepTime,
+          cook_time: formData.cookTime,
+          servings: formData.servings,
+          category: formData.category,
+          ingredients: ingredients,
+          instructions: instructions,
+        });
+
+      if (error) throw error;
+
+      toast.success("Tarifınız başarıyla paylaşıldı!");
+      setTimeout(() => {
+        navigate("/explore");
+      }, 1500);
+    } catch (error: any) {
+      toast.error("Tarif eklenirken bir hata oluştu: " + error.message);
+    }
   };
 
   return (

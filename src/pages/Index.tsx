@@ -1,38 +1,65 @@
+import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import RecipeCarousel from "@/components/RecipeCarousel";
 import RecipeGrid from "@/components/RecipeGrid";
-import { mockRecipes } from "@/data/mockRecipes";
-
-// Split recipes into categories
-const featuredRecipes = mockRecipes.slice(0, 3).map(r => ({
-  id: r.id,
-  title: r.title,
-  author: r.author,
-  imageUrl: r.imageUrl
-}));
-
-const popularRecipes = mockRecipes.slice(3, 6).map(r => ({
-  id: r.id,
-  title: r.title,
-  author: r.author,
-  imageUrl: r.imageUrl
-}));
-
-const newRecipes = mockRecipes.slice(6, 9).map(r => ({
-  id: r.id,
-  title: r.title,
-  author: r.author,
-  imageUrl: r.imageUrl
-}));
-
-const recommendedRecipes = mockRecipes.slice(9, 12).map(r => ({
-  id: r.id,
-  title: r.title,
-  author: r.author,
-  imageUrl: r.imageUrl
-}));
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
+  const [featuredRecipes, setFeaturedRecipes] = useState<any[]>([]);
+  const [popularRecipes, setPopularRecipes] = useState<any[]>([]);
+  const [newRecipes, setNewRecipes] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadRecipes();
+  }, []);
+
+  const loadRecipes = async () => {
+    try {
+      const { data: recipes, error } = await supabase
+        .from('recipes')
+        .select(`
+          *,
+          profiles:user_id (
+            name
+          )
+        `)
+        .order('created_at', { ascending: false })
+        .limit(12);
+
+      if (error) throw error;
+
+      const formattedRecipes = (recipes || []).map((r: any) => ({
+        id: r.id,
+        title: r.title,
+        author: r.profiles?.name || "Kullanıcı",
+        imageUrl: r.image_url
+      }));
+
+      // Split into categories
+      setFeaturedRecipes(formattedRecipes.slice(0, 3));
+      setPopularRecipes(formattedRecipes.slice(3, 6));
+      setNewRecipes(formattedRecipes.slice(6, 9));
+    } catch (error) {
+      console.error("Error loading recipes:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <Header />
+        <main className="flex-1 px-4 md:px-10 lg:px-40 py-5">
+          <div className="max-w-[960px] mx-auto text-center py-20">
+            <p className="text-muted-foreground">Tarifler yükleniyor...</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
@@ -43,13 +70,15 @@ const Index = () => {
             Bugün Ne Pişireceksiniz?
           </h1>
           
-          <RecipeCarousel recipes={featuredRecipes} />
+          {featuredRecipes.length > 0 && <RecipeCarousel recipes={featuredRecipes} />}
+          {popularRecipes.length > 0 && <RecipeGrid title="Popüler Tarifler" recipes={popularRecipes} />}
+          {newRecipes.length > 0 && <RecipeGrid title="Yeni Eklenenler" recipes={newRecipes} />}
           
-          <RecipeGrid title="Popüler Tarifler" recipes={popularRecipes} />
-          
-          <RecipeGrid title="Yeni Eklenenler" recipes={newRecipes} />
-          
-          <RecipeGrid title="Önerilenler" recipes={recommendedRecipes} />
+          {featuredRecipes.length === 0 && popularRecipes.length === 0 && newRecipes.length === 0 && (
+            <div className="text-center py-20">
+              <p className="text-muted-foreground">Henüz tarif eklenmemiş. İlk tarifi siz ekleyin!</p>
+            </div>
+          )}
         </div>
       </main>
     </div>

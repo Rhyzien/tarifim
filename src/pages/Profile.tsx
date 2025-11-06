@@ -25,6 +25,9 @@ const Profile = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [avatarPreview, setAvatarPreview] = useState("");
   const [profileData, setProfileData] = useState<any>(null);
+  const [userRecipes, setUserRecipes] = useState<any[]>([]);
+  const [recipeCount, setRecipeCount] = useState(0);
+  const [savedCount, setSavedCount] = useState(0);
   
   // Settings state
   const [settings, setSettings] = useState({
@@ -66,6 +69,26 @@ const Profile = () => {
             privateAccount: false,
           });
           setAvatarPreview(data.avatar_url || "");
+        }
+        
+        // Load user recipes
+        const { data: recipes } = await supabase
+          .from('recipes')
+          .select('*')
+          .eq('user_id', targetUserId)
+          .order('created_at', { ascending: false });
+        
+        setUserRecipes(recipes || []);
+        setRecipeCount((recipes || []).length);
+        
+        // Load saved recipes count
+        if (targetUserId === user.id) {
+          const { count } = await supabase
+            .from('saved_recipes')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', user.id);
+          
+          setSavedCount(count || 0);
         }
         
         // Check if following
@@ -215,13 +238,13 @@ const Profile = () => {
           <div className="flex flex-wrap gap-3 px-4 py-3">
             <div className="flex min-w-[111px] flex-1 basis-[fit-content] flex-col gap-2 rounded-lg border border-border p-3 items-center text-center">
               <p className="text-foreground tracking-light text-2xl font-bold leading-tight">
-                {userProfile?.recipeCount || 0}
+                {recipeCount}
               </p>
               <p className="text-muted-foreground text-sm font-normal leading-normal">Tarifler</p>
             </div>
             {isOwnProfile && (
               <div className="flex min-w-[111px] flex-1 basis-[fit-content] flex-col gap-2 rounded-lg border border-border p-3 items-center text-center">
-                <p className="text-foreground tracking-light text-2xl font-bold leading-tight">30</p>
+                <p className="text-foreground tracking-light text-2xl font-bold leading-tight">{savedCount}</p>
                 <p className="text-muted-foreground text-sm font-normal leading-normal">Kaydedilenler</p>
               </div>
             )}
@@ -281,7 +304,7 @@ const Profile = () => {
           {/* Tab Content */}
           {activeTab === "recipes" && (
             <div className="grid grid-cols-[repeat(auto-fit,minmax(158px,1fr))] gap-3 p-4">
-              {(userProfile?.recipes || []).map((recipe) => (
+              {userRecipes.map((recipe) => (
                 <Link
                   key={recipe.id}
                   to={`/recipe/${recipe.id}`}
@@ -289,13 +312,18 @@ const Profile = () => {
                 >
                   <div
                     className="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-lg hover:scale-105 transition-transform"
-                    style={{ backgroundImage: `url("${recipe.imageUrl}")` }}
+                    style={{ backgroundImage: `url("${recipe.image_url}")` }}
                   />
                   <div>
                     <p className="text-foreground text-base font-medium leading-normal">{recipe.title}</p>
                   </div>
                 </Link>
               ))}
+              {userRecipes.length === 0 && (
+                <div className="col-span-full text-center py-20">
+                  <p className="text-muted-foreground">Henüz tarif eklenmemiş.</p>
+                </div>
+              )}
             </div>
           )}
 

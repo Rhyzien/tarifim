@@ -4,35 +4,100 @@ import Header from "@/components/Header";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getRecipeById, Recipe } from "@/data/mockRecipes";
+import { supabase } from "@/integrations/supabase/client";
 import { Search } from "lucide-react";
 
+interface SavedRecipe {
+  id: string;
+  title: string;
+  image_url: string;
+  category: string;
+  created_at: string;
+  profiles: { name: string };
+}
+
 const SavedRecipes = () => {
-  const [savedRecipes, setSavedRecipes] = useState<Recipe[]>([]);
+  const [savedRecipes, setSavedRecipes] = useState<SavedRecipe[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [dateFilter, setDateFilter] = useState<string>("all");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const savedIds = JSON.parse(localStorage.getItem('savedRecipes') || '[]');
-    const recipes = savedIds.map((id: string) => getRecipeById(id)).filter(Boolean) as Recipe[];
-    setSavedRecipes(recipes);
+    loadSavedRecipes();
   }, []);
+
+  const loadSavedRecipes = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('saved_recipes')
+        .select(`
+          recipe_id,
+          recipes (
+            id,
+            title,
+            image_url,
+            category,
+            created_at,
+            profiles:user_id (name)
+          )
+        `)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      const formatted = (data || []).map((item: any) => ({
+        id: item.recipes.id,
+        title: item.recipes.title,
+        image_url: item.recipes.image_url,
+        category: item.recipes.category,
+        created_at: item.recipes.created_at,
+        profiles: item.recipes.profiles
+      }));
+
+      setSavedRecipes(formatted);
+    } catch (error) {
+      console.error("Error loading saved recipes:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredRecipes = savedRecipes.filter(recipe => {
     const matchesSearch = recipe.title.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = categoryFilter === "all" || recipe.title.toLowerCase().includes(categoryFilter);
+    const matchesCategory = categoryFilter === "all" || recipe.category === categoryFilter;
     
     let matchesDate = true;
     if (dateFilter === "recent") {
-      // Simulate recent filter
-      matchesDate = Math.random() > 0.5;
+      const recipeDate = new Date(recipe.created_at);
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      matchesDate = recipeDate >= thirtyDaysAgo;
     } else if (dateFilter === "old") {
-      matchesDate = Math.random() > 0.5;
+      const recipeDate = new Date(recipe.created_at);
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      matchesDate = recipeDate < thirtyDaysAgo;
     }
     
     return matchesSearch && matchesCategory && matchesDate;
   });
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <Header />
+        <main className="flex-1 px-4 md:px-10 lg:px-40 py-5">
+          <div className="max-w-[960px] mx-auto text-center py-20">
+            <p className="text-muted-foreground">Yükleniyor...</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -46,7 +111,7 @@ const SavedRecipes = () => {
                 Kaydedilen Tarifler
               </p>
               <p className="text-muted-foreground text-sm font-normal leading-normal">
-                Daha sonra denemek için kaydettiğiniz tarifler burada.
+                Daha sonra denemek için kaydettiğiniz tarifler burada. Toplam: {savedRecipes.length}
               </p>
             </div>
           </div>
@@ -89,8 +154,8 @@ const SavedRecipes = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tüm Tarihler</SelectItem>
-                <SelectItem value="recent">En Yeni</SelectItem>
-                <SelectItem value="old">En Eski</SelectItem>
+                <SelectItem value="recent">Son 30 Gün</SelectItem>
+                <SelectItem value="old">30 Günden Eski</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -98,7 +163,9 @@ const SavedRecipes = () => {
           {filteredRecipes.length === 0 ? (
             <div className="p-4 text-center">
               <p className="text-muted-foreground">
-                {searchQuery ? "Arama sonucu bulunamadı" : "Henüz kayıtlı tarifiniz yok"}
+                {searchQuery || categoryFilter !== "all" || dateFilter !== "all" 
+                  ? "Arama kriterlerinize uygun tarif bulunamadı."
+                  : "Henüz kaydedilmiş tarifınız yok."}
               </p>
             </div>
           ) : (
@@ -107,19 +174,15 @@ const SavedRecipes = () => {
                 <Link
                   key={recipe.id}
                   to={`/recipe/${recipe.id}`}
-                  className="flex flex-col gap-3 pb-3"
+                  className="flex flex-col gap-3"
                 >
                   <div
                     className="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-lg hover:scale-105 transition-transform"
-                    style={{ backgroundImage: `url("${recipe.imageUrl}")` }}
+                    style={{ backgroundImage: `url("${recipe.image_url}")` }}
                   />
                   <div>
-                    <p className="text-foreground text-base font-medium leading-normal">
-                      {recipe.title}
-                    </p>
-                    <p className="text-muted-foreground text-sm font-normal leading-normal">
-                      {recipe.author}
-                    </p>
+                    <p className="text-foreground text-base font-medium leading-normal">{recipe.title}</p>
+                    <p className="text-muted-foreground text-sm">{recipe.profiles?.name}</p>
                   </div>
                 </Link>
               ))}
@@ -127,14 +190,6 @@ const SavedRecipes = () => {
           )}
         </div>
       </main>
-
-      <footer className="flex justify-center">
-        <div className="flex max-w-[960px] flex-1 flex-col">
-          <p className="text-muted-foreground text-sm font-normal leading-normal pb-3 pt-1 px-4 text-center">
-            © 2024 Tarifim.com. Tüm hakları saklıdır.
-          </p>
-        </div>
-      </footer>
     </div>
   );
 };

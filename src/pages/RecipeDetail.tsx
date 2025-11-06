@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import Header from "@/components/Header";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import ShareDialog from "@/components/ShareDialog";
@@ -13,40 +12,162 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { getRecipeById, Comment } from "@/data/mockRecipes";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
+interface Comment {
+  id: string;
+  comment: string;
+  created_at: string;
+  profiles: { name: string; avatar_url: string };
+}
 
 const RecipeDetail = () => {
   const { id } = useParams();
-  const recipe = getRecipeById(id || "");
+  const [recipe, setRecipe] = useState<any>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [isSaved, setIsSaved] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState<string>("");
 
   useEffect(() => {
-    if (recipe) {
-      setComments(recipe.comments);
-      // Check if recipe is saved
-      const savedRecipes = JSON.parse(localStorage.getItem('savedRecipes') || '[]');
-      setIsSaved(savedRecipes.includes(id));
-    }
-  }, [recipe, id]);
+    loadRecipe();
+    loadComments();
+    checkIfSaved();
+    getCurrentUser();
+  }, [id]);
 
-  const handleSaveRecipe = () => {
-    const savedRecipes = JSON.parse(localStorage.getItem('savedRecipes') || '[]');
-    if (isSaved) {
-      const updated = savedRecipes.filter((recipeId: string) => recipeId !== id);
-      localStorage.setItem('savedRecipes', JSON.stringify(updated));
-      setIsSaved(false);
-      toast.success("Tarif kayıtlılardan çıkarıldı");
-    } else {
-      savedRecipes.push(id);
-      localStorage.setItem('savedRecipes', JSON.stringify(savedRecipes));
-      setIsSaved(true);
-      toast.success("Tarif kaydedildi!");
+  const getCurrentUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) setCurrentUserId(user.id);
+  };
+
+  const loadRecipe = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('recipes')
+        .select(`
+          *,
+          profiles:user_id (name, avatar_url)
+        `)
+        .eq('id', id)
+        .single();
+
+      if (error) throw error;
+      setRecipe(data);
+    } catch (error) {
+      console.error("Error loading recipe:", error);
+    } finally {
+      setLoading(false);
     }
   };
+
+  const loadComments = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('recipe_comments')
+        .select(`
+          id,
+          comment,
+          created_at,
+          profiles:user_id (name, avatar_url)
+        `)
+        .eq('recipe_id', id)
+        .order('created_at', { ascending: false});
+
+      if (error) throw error;
+      setComments((data as any) || []);
+    } catch (error) {
+      console.error("Error loading comments:", error);
+    }
+  };
+
+  const checkIfSaved = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data } = await supabase
+        .from('saved_recipes')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('recipe_id', id)
+        .maybeSingle();
+
+      setIsSaved(!!data);
+    } catch (error) {
+      console.error("Error checking saved status:", error);
+    }
+  };
+
+  const handleSaveRecipe = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Kaydetmek için giriş yapmalısınız");
+        return;
+      }
+
+      if (isSaved) {
+        await supabase
+          .from('saved_recipes')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('recipe_id', id);
+        setIsSaved(false);
+        toast.success("Tarif kayıtlılardan çıkarıldı");
+      } else {
+        await supabase
+          .from('saved_recipes')
+          .insert({ user_id: user.id, recipe_id: id });
+        setIsSaved(true);
+        toast.success("Tarif kaydedildi!");
+      }
+    } catch (error: any) {
+      toast.error("Hata: " + error.message);
+    }
+  };
+
+  const handleAddComment = async () => {
+    if (!newComment.trim()) return;
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Yorum yapmak için giriş yapmalısınız");
+        return;
+      }
+
+      await supabase
+        .from('recipe_comments')
+        .insert({
+          recipe_id: id,
+          user_id: user.id,
+          comment: newComment
+        });
+
+      setNewComment("");
+      loadComments();
+      toast.success("Yorumunuz eklendi!");
+    } catch (error: any) {
+      toast.error("Yorum eklenemedi: " + error.message);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <Header />
+        <main className="flex-1 px-4 md:px-10 lg:px-40 py-5">
+          <div className="max-w-[960px] mx-auto text-center py-20">
+            <p className="text-muted-foreground">Yükleniyor...</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   if (!recipe) {
     return (
@@ -71,7 +192,6 @@ const RecipeDetail = () => {
       
       <main className="flex-1 px-4 md:px-10 lg:px-40 py-5">
         <div className="max-w-[960px] mx-auto">
-          {/* Breadcrumb */}
           <div className="p-4">
             <Breadcrumb>
               <BreadcrumbList>
@@ -90,184 +210,124 @@ const RecipeDetail = () => {
             </Breadcrumb>
           </div>
 
-          {/* Recipe Title */}
           <h1 className="text-foreground text-[28px] font-bold leading-tight px-4 text-left pb-3 pt-5">
             {recipe.title}
           </h1>
 
-          {/* Recipe Description */}
           <p className="text-foreground text-base font-normal leading-normal pb-3 pt-1 px-4">
             {recipe.description}
           </p>
 
-          {/* Recipe Image */}
-          <div className="w-full py-3">
-            <div className="w-full aspect-[3/2] rounded-lg overflow-hidden">
-              <img 
-                src={recipe.imageUrl} 
-                alt={recipe.title}
-                className="w-full h-full object-cover"
-              />
-            </div>
+          <div className="flex gap-2 px-4 py-3">
+            {recipe.prep_time && <div className="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-secondary pl-3 pr-3">
+              <p className="text-foreground text-sm font-medium leading-normal">⏱️ {recipe.prep_time} dk hazırlık</p>
+            </div>}
+            {recipe.cook_time && <div className="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-secondary pl-3 pr-3">
+              <p className="text-foreground text-sm font-medium leading-normal">🔥 {recipe.cook_time} dk pişirme</p>
+            </div>}
+            {recipe.servings && <div className="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-secondary pl-3 pr-3">
+              <p className="text-foreground text-sm font-medium leading-normal">👨‍👩‍👧‍👦 {recipe.servings} kişilik</p>
+            </div>}
+            {recipe.category && <div className="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-secondary pl-3 pr-3">
+              <p className="text-foreground text-sm font-medium leading-normal">🍽️ {recipe.category}</p>
+            </div>}
           </div>
 
-          {/* Recipe Info */}
-          {(recipe.prepTime || recipe.cookTime || recipe.servings || recipe.category) && (
-            <div className="flex flex-wrap gap-4 px-4 py-3 bg-muted/30 rounded-lg mx-4">
-              {recipe.prepTime && (
-                <div className="flex flex-col">
-                  <span className="text-muted-foreground text-xs font-medium">Hazırlık Süresi</span>
-                  <span className="text-foreground text-sm font-semibold">{recipe.prepTime} dk</span>
-                </div>
-              )}
-              {recipe.cookTime && (
-                <div className="flex flex-col">
-                  <span className="text-muted-foreground text-xs font-medium">Pişirme Süresi</span>
-                  <span className="text-foreground text-sm font-semibold">{recipe.cookTime} dk</span>
-                </div>
-              )}
-              {recipe.servings && (
-                <div className="flex flex-col">
-                  <span className="text-muted-foreground text-xs font-medium">Porsiyon</span>
-                  <span className="text-foreground text-sm font-semibold">{recipe.servings} kişilik</span>
-                </div>
-              )}
-              {recipe.category && (
-                <div className="flex flex-col">
-                  <span className="text-muted-foreground text-xs font-medium">Kategori</span>
-                  <span className="text-foreground text-sm font-semibold capitalize">{recipe.category.replace('-', ' ')}</span>
-                </div>
-              )}
-            </div>
-          )}
+          <div
+            className="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-lg mx-4 max-w-[928px]"
+            style={{ backgroundImage: `url("${recipe.image_url}")` }}
+          />
 
-          {/* Ingredients */}
-          <h2 className="text-foreground text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">
-            Malzemeler
-          </h2>
-          <ul className="px-4 space-y-3 list-disc list-inside">
-            {recipe.ingredients.map((ingredient, index) => (
-              <li key={index} className="text-foreground text-base font-normal leading-normal">
-                {ingredient}
-              </li>
-            ))}
-          </ul>
-
-          {/* Recipe Steps */}
-          <h2 className="text-foreground text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">
-            Tarif
-          </h2>
-          <ol className="px-4 space-y-4 list-decimal list-inside">
-            {recipe.steps.map((step) => (
-              <li key={step.number} className="text-foreground text-base font-normal leading-normal pl-2">
-                {step.description}
-              </li>
-            ))}
-          </ol>
-
-          {/* Author */}
-          <h2 className="text-foreground text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">
-            Yazar
-          </h2>
-          <Link to={`/profile/${recipe.authorId}`} className="flex items-center gap-4 px-4 min-h-[72px] py-2 hover:bg-muted/50 transition-colors rounded-lg cursor-pointer">
-            <div
-              className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-14 w-14 shrink-0"
-              style={{ backgroundImage: `url("${recipe.authorDetails.avatarUrl}")` }}
-            />
-            <div className="flex flex-col justify-center">
-              <p className="text-foreground text-base font-medium leading-normal">
-                {recipe.authorDetails.name}
-              </p>
-              <p className="text-muted-foreground text-sm font-normal leading-normal">
-                {recipe.authorDetails.recipeCount} tarif
-              </p>
-            </div>
-          </Link>
-
-          {/* Action Buttons */}
-          <div className="flex gap-3 px-4 py-3">
-            <Button 
-              variant="secondary" 
-              className="flex-1 sm:flex-none"
+          <div className="flex items-center gap-4 bg-background px-4 min-h-[72px] py-2">
+            <Link to={`/profile/${recipe.user_id}`} className="flex items-center gap-4">
+              <div
+                className="bg-center bg-no-repeat aspect-square bg-cover rounded-full min-h-[72px] w-[72px]"
+                style={{ backgroundImage: `url("${recipe.profiles?.avatar_url || 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=400'}")` }}
+              />
+              <div>
+                <p className="text-foreground text-base font-medium leading-normal">
+                  {recipe.profiles?.name || "Kullanıcı"}
+                </p>
+              </div>
+            </Link>
+            <div className="flex-1" />
+            <Button
               onClick={handleSaveRecipe}
+              variant={isSaved ? "secondary" : "default"}
+              className={!isSaved ? "bg-[#11d452] hover:bg-[#11d452]/90 text-[#111813]" : ""}
             >
-              {isSaved ? "Kaydedildi ✓" : "Kaydet"}
+              {isSaved ? "Kaydedildi" : "Kaydet"}
             </Button>
-            <Button 
-              className="flex-1 sm:flex-none bg-[#11d452] hover:bg-[#11d452]/90 text-[#111813]"
+            <Button
+              variant="outline"
               onClick={() => setIsShareOpen(true)}
             >
               Paylaş
             </Button>
           </div>
 
-          {/* Share Dialog */}
-          <ShareDialog 
-            isOpen={isShareOpen}
-            onClose={() => setIsShareOpen(false)}
-            recipeTitle={recipe.title}
-            recipeId={recipe.id}
-          />
-
-          {/* Comments Section */}
-          <div className="mt-8">
+          <div className="p-4">
             <h2 className="text-foreground text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">
-              Yorumlar ({comments.length})
+              Malzemeler
             </h2>
+            <ul className="pl-8 space-y-2">
+              {(recipe.ingredients || []).map((ingredient: string, index: number) => (
+                <li key={index} className="text-foreground text-base list-disc">
+                  {ingredient}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="p-4">
+            <h2 className="text-foreground text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">
+              Talimatlar
+            </h2>
+            <ol className="pl-8 space-y-3">
+              {(recipe.instructions || []).map((step: string, index: number) => (
+                <li key={index} className="text-foreground text-base list-decimal">
+                  {step}
+                </li>
+              ))}
+            </ol>
+          </div>
+
+          <div className="p-4">
+            <h3 className="text-foreground text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">
+              Yorumlar ({comments.length})
+            </h3>
             
-            {/* Comment Form */}
-            <div className="px-4 py-3">
-              <div className="flex flex-col gap-3">
+            {currentUserId && (
+              <div className="px-4 py-3">
                 <Textarea
                   placeholder="Yorumunuzu yazın..."
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
-                  className="min-h-[100px]"
+                  className="min-h-24 mb-2"
                 />
-                <div className="flex justify-end">
-                  <Button 
-                    onClick={() => {
-                      if (newComment.trim()) {
-                        setComments([
-                          {
-                            id: String(comments.length + 1),
-                            author: "Siz",
-                            avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop",
-                            text: newComment,
-                            time: "Az önce"
-                          },
-                          ...comments
-                        ]);
-                        setNewComment("");
-                      }
-                    }}
-                    className="bg-accent hover:bg-accent/90 text-accent-foreground"
-                  >
-                    Yorum Yap
-                  </Button>
-                </div>
+                <Button
+                  onClick={handleAddComment}
+                  className="bg-[#11d452] hover:bg-[#11d452]/90 text-[#111813]"
+                >
+                  Yorum Yap
+                </Button>
               </div>
-            </div>
+            )}
 
-            {/* Comments List */}
-            <div className="space-y-4 px-4 py-3">
+            <div className="px-4 space-y-4">
               {comments.map((comment) => (
-                <div key={comment.id} className="flex gap-4 p-4 bg-muted/30 rounded-lg">
+                <div key={comment.id} className="flex gap-3 py-3 border-b border-border">
                   <div
-                    className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-10 w-10 shrink-0"
-                    style={{ backgroundImage: `url("${comment.avatarUrl}")` }}
+                    className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-10 w-10"
+                    style={{ backgroundImage: `url("${comment.profiles?.avatar_url || 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=400'}")` }}
                   />
-                  <div className="flex flex-col gap-1 flex-1">
-                    <div className="flex items-center gap-2">
-                      <p className="text-foreground text-sm font-medium">
-                        {comment.author}
-                      </p>
-                      <span className="text-muted-foreground text-xs">
-                        {comment.time}
-                      </span>
-                    </div>
-                    <p className="text-foreground text-sm leading-normal">
-                      {comment.text}
+                  <div className="flex-1">
+                    <p className="text-foreground text-sm font-medium">
+                      {comment.profiles?.name || "Kullanıcı"}
+                    </p>
+                    <p className="text-foreground text-sm">{comment.comment}</p>
+                    <p className="text-muted-foreground text-xs mt-1">
+                      {new Date(comment.created_at).toLocaleDateString('tr-TR')}
                     </p>
                   </div>
                 </div>
@@ -276,6 +336,13 @@ const RecipeDetail = () => {
           </div>
         </div>
       </main>
+
+      <ShareDialog
+        isOpen={isShareOpen}
+        onClose={() => setIsShareOpen(false)}
+        recipeTitle={recipe.title}
+        recipeId={id || ""}
+      />
     </div>
   );
 };

@@ -2,43 +2,91 @@ import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
-import { mockRecipes, Recipe } from "@/data/mockRecipes";
+import { supabase } from "@/integrations/supabase/client";
+
+interface SimpleRecipe {
+  id: string;
+  title: string;
+  author: string;
+  imageUrl: string;
+}
 
 const Explore = () => {
-  const [displayedRecipes, setDisplayedRecipes] = useState<Recipe[]>([]);
+  const [displayedRecipes, setDisplayedRecipes] = useState<SimpleRecipe[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const observerTarget = useRef<HTMLDivElement>(null);
   const itemsPerLoad = 4;
 
   useEffect(() => {
-    // Initial load
-    const userRecipes = JSON.parse(localStorage.getItem('userRecipes') || '[]');
-    const allRecipes = [...userRecipes, ...mockRecipes];
-    setDisplayedRecipes(allRecipes.slice(0, itemsPerLoad));
+    loadInitial();
   }, []);
 
+  const loadInitial = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('recipes')
+        .select(`
+          *,
+          profiles:user_id (name)
+        `)
+        .order('created_at', { ascending: false })
+        .range(0, itemsPerLoad - 1);
+
+      if (error) throw error;
+
+      const formatted = (data || []).map((r: any) => ({
+        id: r.id,
+        title: r.title,
+        author: r.profiles?.name || "Kullanıcı",
+        imageUrl: r.image_url
+      }));
+
+      setDisplayedRecipes(formatted);
+      setHasMore(formatted.length === itemsPerLoad);
+    } catch (error) {
+      console.error("Error loading recipes:", error);
+    }
+  };
+
   useEffect(() => {
-    const loadMore = () => {
-      const userRecipes = JSON.parse(localStorage.getItem('userRecipes') || '[]');
-      const allRecipes = [...userRecipes, ...mockRecipes];
-      
-      if (displayedRecipes.length >= allRecipes.length) {
-        return; // No more items to load
-      }
-      
+    const loadMore = async () => {
+      if (!hasMore || isLoading) return;
+
       setIsLoading(true);
-      setTimeout(() => {
-        const newItems = allRecipes.slice(displayedRecipes.length, displayedRecipes.length + itemsPerLoad);
-        if (newItems.length > 0) {
-          setDisplayedRecipes(prev => [...prev, ...newItems]);
+      try {
+        const { data, error } = await supabase
+          .from('recipes')
+          .select(`
+            *,
+            profiles:user_id (name)
+          `)
+          .order('created_at', { ascending: false })
+          .range(displayedRecipes.length, displayedRecipes.length + itemsPerLoad - 1);
+
+        if (error) throw error;
+
+        const formatted = (data || []).map((r: any) => ({
+          id: r.id,
+          title: r.title,
+          author: r.profiles?.name || "Kullanıcı",
+          imageUrl: r.image_url
+        }));
+
+        if (formatted.length > 0) {
+          setDisplayedRecipes(prev => [...prev, ...formatted]);
         }
+        setHasMore(formatted.length === itemsPerLoad);
+      } catch (error) {
+        console.error("Error loading more recipes:", error);
+      } finally {
         setIsLoading(false);
-      }, 500);
+      }
     };
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && !isLoading) {
+        if (entries[0].isIntersecting) {
           loadMore();
         }
       },
@@ -50,7 +98,7 @@ const Explore = () => {
     }
 
     return () => observer.disconnect();
-  }, [displayedRecipes, isLoading]);
+  }, [displayedRecipes, hasMore, isLoading]);
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -61,6 +109,12 @@ const Explore = () => {
           <h2 className="text-foreground tracking-light text-[28px] font-bold leading-tight px-4 text-left pb-3 pt-5">
             Akışınız
           </h2>
+          
+          {displayedRecipes.length === 0 && !isLoading && (
+            <div className="text-center py-20">
+              <p className="text-muted-foreground">Henüz tarif eklenmemiş. İlk tarifi siz ekleyin!</p>
+            </div>
+          )}
           
           {displayedRecipes.map((recipe, index) => (
             <div key={`${recipe.id}-${index}`} className="p-4">
