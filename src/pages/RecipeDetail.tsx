@@ -54,7 +54,7 @@ const RecipeDetail = () => {
           profiles:user_id (name, avatar_url)
         `)
         .eq('id', id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       setRecipe(data);

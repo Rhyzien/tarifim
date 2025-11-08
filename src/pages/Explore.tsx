@@ -20,6 +20,15 @@ const Explore = () => {
 
   useEffect(() => {
     loadInitial();
+    
+    // Reload recipes when user navigates back to this page
+    const handleFocus = () => {
+      setDisplayedRecipes([]);
+      loadInitial();
+    };
+    
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
   }, []);
 
   const loadInitial = async () => {

@@ -12,6 +12,14 @@ const Index = () => {
 
   useEffect(() => {
     loadRecipes();
+    
+    // Reload recipes when user navigates back to this page
+    const handleFocus = () => {
+      loadRecipes();
+    };
+    
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
   }, []);
 
   const loadRecipes = async () => {

@@ -121,7 +121,8 @@ const AddRecipe = () => {
 
       toast.success("Tarifınız başarıyla paylaşıldı!");
       setTimeout(() => {
-        navigate("/explore");
+        // Force full page reload to show new recipe
+        window.location.href = "/explore";
       }, 1500);
     } catch (error: any) {
       toast.error("Tarif eklenirken bir hata oluştu: " + error.message);
