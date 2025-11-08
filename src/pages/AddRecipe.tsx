@@ -131,18 +131,18 @@ const AddRecipe = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <div className="px-4 md:px-40 flex justify-center py-5">
+      <div className="px-2 md:px-40 flex justify-center py-5">
         <div className="flex flex-col max-w-[960px] w-full">
-          <div className="flex flex-wrap justify-between gap-3 p-4">
-            <h1 className="text-foreground tracking-light text-[32px] font-bold leading-tight min-w-72">
+          <div className="flex flex-wrap justify-between gap-3 p-2 md:p-4">
+            <h1 className="text-foreground tracking-light text-2xl md:text-[32px] font-bold leading-tight">
               Yeni Tarif Ekle
             </h1>
           </div>
 
           <form onSubmit={handleSubmit}>
-            <div className="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
+            <div className="flex w-full flex-wrap items-end gap-4 px-2 md:px-4 py-3">
               <div className="flex flex-col min-w-40 flex-1">
-                <Label htmlFor="title" className="text-foreground text-base font-medium leading-normal pb-2">
+                <Label htmlFor="title" className="text-foreground text-sm md:text-base font-medium leading-normal pb-2">
                   Tarif Adı
                 </Label>
                 <Input
@@ -156,9 +156,9 @@ const AddRecipe = () => {
               </div>
             </div>
 
-            <div className="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
+            <div className="flex w-full flex-wrap items-end gap-4 px-2 md:px-4 py-3">
               <div className="flex flex-col min-w-40 flex-1">
-                <Label htmlFor="description" className="text-foreground text-base font-medium leading-normal pb-2">
+                <Label htmlFor="description" className="text-foreground text-sm md:text-base font-medium leading-normal pb-2">
                   Açıklama
                 </Label>
                 <Textarea
@@ -173,9 +173,9 @@ const AddRecipe = () => {
               </div>
             </div>
 
-            <div className="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
+            <div className="flex w-full flex-wrap items-end gap-4 px-2 md:px-4 py-3">
               <div className="flex flex-col min-w-40 flex-1">
-                <Label htmlFor="ingredients" className="text-foreground text-base font-medium leading-normal pb-2">
+                <Label htmlFor="ingredients" className="text-foreground text-sm md:text-base font-medium leading-normal pb-2">
                   Malzemeler (Her satıra bir malzeme)
                 </Label>
                 <Textarea
@@ -189,9 +189,9 @@ const AddRecipe = () => {
               </div>
             </div>
 
-            <div className="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
+            <div className="flex w-full flex-wrap items-end gap-4 px-2 md:px-4 py-3">
               <div className="flex flex-col min-w-40 flex-1">
-                <Label htmlFor="instructions" className="text-foreground text-base font-medium leading-normal pb-2">
+                <Label htmlFor="instructions" className="text-foreground text-sm md:text-base font-medium leading-normal pb-2">
                   Talimatlar (Her satıra bir adım)
                 </Label>
                 <Textarea
@@ -205,9 +205,9 @@ const AddRecipe = () => {
               </div>
             </div>
 
-            <div className="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
+            <div className="flex w-full flex-wrap items-end gap-4 px-2 md:px-4 py-3">
               <div className="flex flex-col min-w-40 flex-1">
-                <Label htmlFor="prepTime" className="text-foreground text-base font-medium leading-normal pb-2">
+                <Label htmlFor="prepTime" className="text-foreground text-sm md:text-base font-medium leading-normal pb-2">
                   Hazırlık Süresi (dakika)
                 </Label>
                 <Input
@@ -221,9 +221,9 @@ const AddRecipe = () => {
               </div>
             </div>
 
-            <div className="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
+            <div className="flex w-full flex-wrap items-end gap-4 px-2 md:px-4 py-3">
               <div className="flex flex-col min-w-40 flex-1">
-                <Label htmlFor="cookTime" className="text-foreground text-base font-medium leading-normal pb-2">
+                <Label htmlFor="cookTime" className="text-foreground text-sm md:text-base font-medium leading-normal pb-2">
                   Pişirme Süresi (dakika)
                 </Label>
                 <Input
@@ -237,9 +237,9 @@ const AddRecipe = () => {
               </div>
             </div>
 
-            <div className="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
+            <div className="flex w-full flex-wrap items-end gap-4 px-2 md:px-4 py-3">
               <div className="flex flex-col min-w-40 flex-1">
-                <Label htmlFor="servings" className="text-foreground text-base font-medium leading-normal pb-2">
+                <Label htmlFor="servings" className="text-foreground text-sm md:text-base font-medium leading-normal pb-2">
                   Porsiyon Sayısı
                 </Label>
                 <Input
@@ -253,9 +253,9 @@ const AddRecipe = () => {
               </div>
             </div>
 
-            <div className="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
+            <div className="flex w-full flex-wrap items-end gap-4 px-2 md:px-4 py-3">
               <div className="flex flex-col min-w-40 flex-1">
-                <Label htmlFor="category" className="text-foreground text-base font-medium leading-normal pb-2">
+                <Label htmlFor="category" className="text-foreground text-sm md:text-base font-medium leading-normal pb-2">
                   Kategori
                 </Label>
                 <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })} required>
@@ -274,7 +274,7 @@ const AddRecipe = () => {
               </div>
             </div>
 
-            <div className="flex flex-col p-4">
+            <div className="flex flex-col p-2 md:p-4">
               <input
                 ref={fileInputRef}
                 type="file"
@@ -284,7 +284,7 @@ const AddRecipe = () => {
               />
               {imagePreview ? (
                 <div className="relative rounded-lg border-2 border-border overflow-hidden">
-                  <img src={imagePreview} alt="Preview" className="w-full h-64 object-cover" />
+                  <img src={imagePreview} alt="Preview" className="w-full h-48 md:h-64 object-cover" />
                   <Button
                     type="button"
                     variant="secondary"
@@ -299,12 +299,12 @@ const AddRecipe = () => {
                   </Button>
                 </div>
               ) : (
-                <div className="flex flex-col items-center gap-6 rounded-lg border-2 border-dashed border-border px-6 py-14">
-                  <div className="flex max-w-[480px] flex-col items-center gap-2">
-                    <p className="text-foreground text-lg font-bold leading-tight tracking-[-0.015em] max-w-[480px] text-center">
+                <div className="flex flex-col items-center gap-4 md:gap-6 rounded-lg border-2 border-dashed border-border px-4 md:px-6 py-8 md:py-14">
+                  <div className="flex w-full flex-col items-center gap-2">
+                    <p className="text-foreground text-base md:text-lg font-bold leading-tight tracking-[-0.015em] text-center">
                       Fotoğrafları Yükle
                     </p>
-                    <p className="text-foreground text-sm font-normal leading-normal max-w-[480px] text-center">
+                    <p className="text-foreground text-xs md:text-sm font-normal leading-normal text-center">
                       Tarifiniz için fotoğraflar yükleyin
                     </p>
                   </div>
@@ -321,8 +321,8 @@ const AddRecipe = () => {
               )}
             </div>
 
-            <div className="flex px-4 py-3 justify-end">
-              <Button type="submit" className="bg-[#11d452] hover:bg-[#11d452]/90 text-[#111813]">
+            <div className="flex px-2 md:px-4 py-3 justify-end">
+              <Button type="submit" className="bg-[#11d452] hover:bg-[#11d452]/90 text-[#111813] w-full md:w-auto">
                 Tarifi Paylaş
               </Button>
             </div>

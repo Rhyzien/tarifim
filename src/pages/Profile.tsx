@@ -299,21 +299,21 @@ const Profile = () => {
       <main className="flex-1 px-4 md:px-10 lg:px-40 py-5">
         <div className="max-w-[960px] mx-auto">
           {/* Profile Header */}
-          <div className="flex p-4">
-            <div className="flex w-full flex-col gap-4 items-center">
-              <div className="flex gap-4 flex-col items-center">
+          <div className="flex p-2 md:p-4">
+            <div className="flex w-full flex-col gap-3 md:gap-4 items-center">
+              <div className="flex gap-3 md:gap-4 flex-col items-center">
                 <div
-                  className="bg-center bg-no-repeat aspect-square bg-cover rounded-full min-h-32 w-32"
+                  className="bg-center bg-no-repeat aspect-square bg-cover rounded-full min-h-24 w-24 md:min-h-32 md:w-32"
                   style={{ backgroundImage: `url("${avatarPreview || profileData?.avatar_url || userProfile?.avatarUrl || 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=400'}")` }}
                 />
-                <div className="flex flex-col items-center justify-center">
-                  <p className="text-foreground text-[22px] font-bold leading-tight tracking-[-0.015em] text-center">
+                <div className="flex flex-col items-center justify-center px-2">
+                  <p className="text-foreground text-lg md:text-[22px] font-bold leading-tight tracking-[-0.015em] text-center">
                     {profileData?.name || userProfile?.name || "Kullanıcı"}
                   </p>
-                  <p className="text-muted-foreground text-base font-normal leading-normal text-center">
+                  <p className="text-muted-foreground text-sm md:text-base font-normal leading-normal text-center break-words max-w-full">
                     {profileData?.bio || userProfile?.bio || ""}
                   </p>
-                  <p className="text-muted-foreground text-base font-normal leading-normal text-center">
+                  <p className="text-muted-foreground text-sm md:text-base font-normal leading-normal text-center">
                     {followersCount} takipçi • {followingCount} takip
                   </p>
                 </div>
@@ -331,66 +331,66 @@ const Profile = () => {
           </div>
 
           {/* Stats */}
-          <div className="flex flex-wrap gap-3 px-4 py-3">
-            <div className="flex min-w-[111px] flex-1 basis-[fit-content] flex-col gap-2 rounded-lg border border-border p-3 items-center text-center">
-              <p className="text-foreground tracking-light text-2xl font-bold leading-tight">
+          <div className="flex flex-wrap gap-2 md:gap-3 px-2 md:px-4 py-3">
+            <div className="flex min-w-[90px] md:min-w-[111px] flex-1 basis-[fit-content] flex-col gap-1 md:gap-2 rounded-lg border border-border p-2 md:p-3 items-center text-center">
+              <p className="text-foreground tracking-light text-xl md:text-2xl font-bold leading-tight">
                 {recipeCount}
               </p>
-              <p className="text-muted-foreground text-sm font-normal leading-normal">Tarifler</p>
+              <p className="text-muted-foreground text-xs md:text-sm font-normal leading-normal">Tarifler</p>
             </div>
             {isOwnProfile && (
-              <div className="flex min-w-[111px] flex-1 basis-[fit-content] flex-col gap-2 rounded-lg border border-border p-3 items-center text-center">
-                <p className="text-foreground tracking-light text-2xl font-bold leading-tight">{savedCount}</p>
-                <p className="text-muted-foreground text-sm font-normal leading-normal">Kaydedilenler</p>
+              <div className="flex min-w-[90px] md:min-w-[111px] flex-1 basis-[fit-content] flex-col gap-1 md:gap-2 rounded-lg border border-border p-2 md:p-3 items-center text-center">
+                <p className="text-foreground tracking-light text-xl md:text-2xl font-bold leading-tight">{savedCount}</p>
+                <p className="text-muted-foreground text-xs md:text-sm font-normal leading-normal">Kaydedilenler</p>
               </div>
             )}
           </div>
 
           {/* Tabs */}
           <div className="pb-3">
-            <div className="flex border-b border-border px-4 gap-8">
+            <div className="flex border-b border-border px-2 md:px-4 gap-4 md:gap-8 overflow-x-auto">
               <button
                 onClick={() => setActiveTab("recipes")}
-                className={`flex flex-col items-center justify-center border-b-[3px] pb-[13px] pt-4 ${
+                className={`flex flex-col items-center justify-center border-b-[3px] pb-[13px] pt-4 whitespace-nowrap ${
                   activeTab === "recipes"
                     ? "border-b-foreground text-foreground"
                     : "border-b-transparent text-muted-foreground"
                 }`}
               >
-                <p className="text-sm font-bold leading-normal tracking-[0.015em]">Tarifler</p>
+                <p className="text-xs md:text-sm font-bold leading-normal tracking-[0.015em]">Tarifler</p>
               </button>
               
               {isOwnProfile && (
                 <>
                   <button
                     onClick={() => setActiveTab("saved")}
-                    className={`flex flex-col items-center justify-center border-b-[3px] pb-[13px] pt-4 ${
+                    className={`flex flex-col items-center justify-center border-b-[3px] pb-[13px] pt-4 whitespace-nowrap ${
                       activeTab === "saved"
                         ? "border-b-foreground text-foreground"
                         : "border-b-transparent text-muted-foreground"
                     }`}
                   >
-                    <p className="text-sm font-bold leading-normal tracking-[0.015em]">Kaydedilenler</p>
+                    <p className="text-xs md:text-sm font-bold leading-normal tracking-[0.015em]">Kaydedilenler</p>
                   </button>
                   <button
                     onClick={() => setActiveTab("following")}
-                    className={`flex flex-col items-center justify-center border-b-[3px] pb-[13px] pt-4 ${
+                    className={`flex flex-col items-center justify-center border-b-[3px] pb-[13px] pt-4 whitespace-nowrap ${
                       activeTab === "following"
                         ? "border-b-foreground text-foreground"
                         : "border-b-transparent text-muted-foreground"
                     }`}
                   >
-                    <p className="text-sm font-bold leading-normal tracking-[0.015em]">Takip Edilenler</p>
+                    <p className="text-xs md:text-sm font-bold leading-normal tracking-[0.015em]">Takip Edilenler</p>
                   </button>
                   <button
                     onClick={() => setActiveTab("settings")}
-                    className={`flex flex-col items-center justify-center border-b-[3px] pb-[13px] pt-4 ${
+                    className={`flex flex-col items-center justify-center border-b-[3px] pb-[13px] pt-4 whitespace-nowrap ${
                       activeTab === "settings"
                         ? "border-b-foreground text-foreground"
                         : "border-b-transparent text-muted-foreground"
                     }`}
                   >
-                    <p className="text-sm font-bold leading-normal tracking-[0.015em]">Ayarlar</p>
+                    <p className="text-xs md:text-sm font-bold leading-normal tracking-[0.015em]">Ayarlar</p>
                   </button>
                 </>
               )}

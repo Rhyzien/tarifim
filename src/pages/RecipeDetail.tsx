@@ -212,143 +212,147 @@ const RecipeDetail = () => {
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
       
-      <main className="flex-1 px-4 md:px-10 lg:px-40 py-5">
+      <main className="flex-1 px-2 md:px-10 lg:px-40 py-5">
         <div className="max-w-[960px] mx-auto">
-          <div className="p-4">
+          <div className="p-2 md:p-4 overflow-x-auto">
             <Breadcrumb>
-              <BreadcrumbList>
+              <BreadcrumbList className="flex-nowrap">
                 <BreadcrumbItem>
                   <BreadcrumbLink asChild>
-                    <Link to="/" className="text-muted-foreground hover:text-foreground">
+                    <Link to="/" className="text-muted-foreground hover:text-foreground text-xs md:text-sm whitespace-nowrap">
                       Ana Sayfa
                     </Link>
                   </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbPage className="text-foreground">Tarifler</BreadcrumbPage>
+                  <BreadcrumbPage className="text-foreground text-xs md:text-sm whitespace-nowrap">Tarifler</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
           </div>
 
-          <h1 className="text-foreground text-[28px] font-bold leading-tight px-4 text-left pb-3 pt-5">
+          <h1 className="text-foreground text-xl md:text-[28px] font-bold leading-tight px-2 md:px-4 text-left pb-3 pt-5">
             {recipe.title}
           </h1>
 
-          <p className="text-foreground text-base font-normal leading-normal pb-3 pt-1 px-4">
+          <p className="text-foreground text-sm md:text-base font-normal leading-normal pb-3 pt-1 px-2 md:px-4">
             {recipe.description}
           </p>
 
-          <div className="flex gap-2 px-4 py-3">
-            {recipe.prep_time && <div className="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-secondary pl-3 pr-3">
-              <p className="text-foreground text-sm font-medium leading-normal">⏱️ {recipe.prep_time} dk hazırlık</p>
+          <div className="flex gap-2 px-2 md:px-4 py-3 flex-wrap">
+            {recipe.prep_time && <div className="flex h-7 md:h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-secondary pl-2 pr-2 md:pl-3 md:pr-3">
+              <p className="text-foreground text-xs md:text-sm font-medium leading-normal">⏱️ {recipe.prep_time} dk hazırlık</p>
             </div>}
-            {recipe.cook_time && <div className="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-secondary pl-3 pr-3">
-              <p className="text-foreground text-sm font-medium leading-normal">🔥 {recipe.cook_time} dk pişirme</p>
+            {recipe.cook_time && <div className="flex h-7 md:h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-secondary pl-2 pr-2 md:pl-3 md:pr-3">
+              <p className="text-foreground text-xs md:text-sm font-medium leading-normal">🔥 {recipe.cook_time} dk pişirme</p>
             </div>}
-            {recipe.servings && <div className="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-secondary pl-3 pr-3">
-              <p className="text-foreground text-sm font-medium leading-normal">👨‍👩‍👧‍👦 {recipe.servings} kişilik</p>
+            {recipe.servings && <div className="flex h-7 md:h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-secondary pl-2 pr-2 md:pl-3 md:pr-3">
+              <p className="text-foreground text-xs md:text-sm font-medium leading-normal">👨‍👩‍👧‍👦 {recipe.servings} kişilik</p>
             </div>}
-            {recipe.category && <div className="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-secondary pl-3 pr-3">
-              <p className="text-foreground text-sm font-medium leading-normal">🍽️ {recipe.category}</p>
+            {recipe.category && <div className="flex h-7 md:h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-secondary pl-2 pr-2 md:pl-3 md:pr-3">
+              <p className="text-foreground text-xs md:text-sm font-medium leading-normal">🍽️ {recipe.category}</p>
             </div>}
           </div>
 
           <div
-            className="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-lg mx-4 max-w-[928px]"
+            className="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-lg mx-2 md:mx-4 max-w-[calc(100%-1rem)] md:max-w-[928px]"
             style={{ backgroundImage: `url("${recipe.image_url}")` }}
           />
 
-          <div className="flex items-center gap-4 bg-background px-4 min-h-[72px] py-2">
-            <Link to={`/profile/${recipe.user_id}`} className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4 bg-background px-2 md:px-4 min-h-[72px] py-2 flex-wrap">
+            <Link to={`/profile/${recipe.user_id}`} className="flex items-center gap-2 md:gap-4">
               <div
-                className="bg-center bg-no-repeat aspect-square bg-cover rounded-full min-h-[72px] w-[72px]"
+                className="bg-center bg-no-repeat aspect-square bg-cover rounded-full min-h-[48px] w-[48px] md:min-h-[72px] md:w-[72px]"
                 style={{ backgroundImage: `url("${recipe.profiles?.avatar_url || 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=400'}")` }}
               />
               <div>
-                <p className="text-foreground text-base font-medium leading-normal">
+                <p className="text-foreground text-sm md:text-base font-medium leading-normal">
                   {recipe.profiles?.name || "Kullanıcı"}
                 </p>
               </div>
             </Link>
-            <div className="flex-1" />
+            <div className="flex-1 min-w-[20px]" />
             <Button
               onClick={handleSaveRecipe}
               variant={isSaved ? "secondary" : "default"}
-              className={!isSaved ? "bg-[#11d452] hover:bg-[#11d452]/90 text-[#111813]" : ""}
+              className={`text-xs md:text-sm ${!isSaved ? "bg-[#11d452] hover:bg-[#11d452]/90 text-[#111813]" : ""}`}
+              size="sm"
             >
               {isSaved ? "Kaydedildi" : "Kaydet"}
             </Button>
             <Button
               variant="outline"
               onClick={() => setIsShareOpen(true)}
+              className="text-xs md:text-sm"
+              size="sm"
             >
               Paylaş
             </Button>
           </div>
 
-          <div className="p-4">
-            <h2 className="text-foreground text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">
+          <div className="p-2 md:p-4">
+            <h2 className="text-foreground text-lg md:text-[22px] font-bold leading-tight tracking-[-0.015em] px-2 md:px-4 pb-3 pt-5">
               Malzemeler
             </h2>
-            <ul className="pl-8 space-y-2">
+            <ul className="pl-6 md:pl-8 space-y-2">
               {(recipe.ingredients || []).map((ingredient: string, index: number) => (
-                <li key={index} className="text-foreground text-base list-disc">
+                <li key={index} className="text-foreground text-sm md:text-base list-disc">
                   {ingredient}
                 </li>
               ))}
             </ul>
           </div>
 
-          <div className="p-4">
-            <h2 className="text-foreground text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">
+          <div className="p-2 md:p-4">
+            <h2 className="text-foreground text-lg md:text-[22px] font-bold leading-tight tracking-[-0.015em] px-2 md:px-4 pb-3 pt-5">
               Talimatlar
             </h2>
-            <ol className="pl-8 space-y-3">
+            <ol className="pl-6 md:pl-8 space-y-3">
               {(recipe.instructions || []).map((step: string, index: number) => (
-                <li key={index} className="text-foreground text-base list-decimal">
+                <li key={index} className="text-foreground text-sm md:text-base list-decimal">
                   {step}
                 </li>
               ))}
             </ol>
           </div>
 
-          <div className="p-4">
-            <h3 className="text-foreground text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">
+          <div className="p-2 md:p-4">
+            <h3 className="text-foreground text-base md:text-lg font-bold leading-tight tracking-[-0.015em] px-2 md:px-4 pb-2 pt-4">
               Yorumlar ({comments.length})
             </h3>
             
             {currentUserId && (
-              <div className="px-4 py-3">
+              <div className="px-2 md:px-4 py-3">
                 <Textarea
                   placeholder="Yorumunuzu yazın..."
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
-                  className="min-h-24 mb-2"
+                  className="min-h-20 md:min-h-24 mb-2 text-sm md:text-base"
                   maxLength={500}
                 />
                 <Button
                   onClick={handleAddComment}
-                  className="bg-[#11d452] hover:bg-[#11d452]/90 text-[#111813]"
+                  className="bg-[#11d452] hover:bg-[#11d452]/90 text-[#111813] w-full md:w-auto text-sm md:text-base"
+                  size="sm"
                 >
                   Yorum Yap
                 </Button>
               </div>
             )}
 
-            <div className="px-4 space-y-4">
+            <div className="px-2 md:px-4 space-y-4">
               {comments.map((comment) => (
-                <div key={comment.id} className="flex gap-3 py-3 border-b border-border">
+                <div key={comment.id} className="flex gap-2 md:gap-3 py-3 border-b border-border">
                   <div
-                    className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-10 w-10"
+                    className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-8 w-8 md:h-10 md:w-10 shrink-0"
                     style={{ backgroundImage: `url("${comment.profiles?.avatar_url || 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=400'}")` }}
                   />
-                  <div className="flex-1">
-                    <p className="text-foreground text-sm font-medium">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-foreground text-xs md:text-sm font-medium">
                       {comment.profiles?.name || "Kullanıcı"}
                     </p>
-                    <p className="text-foreground text-sm">{comment.comment}</p>
+                    <p className="text-foreground text-xs md:text-sm break-words">{comment.comment}</p>
                     <p className="text-muted-foreground text-xs mt-1">
                       {new Date(comment.created_at).toLocaleDateString('tr-TR')}
                     </p>

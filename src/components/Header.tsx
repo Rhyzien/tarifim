@@ -50,15 +50,15 @@ const Header = () => {
   }, []);
 
   return (
-    <header className="flex items-center justify-between whitespace-nowrap border-b border-border px-10 py-3 bg-background">
-      <Link to="/" className="flex items-center gap-4 text-foreground">
-        <ChefHat className="w-8 h-8 text-[#11d452]" />
-        <h2 className="text-foreground text-lg font-bold leading-tight tracking-[-0.015em]">
+    <header className="flex items-center justify-between whitespace-nowrap border-b border-border px-4 md:px-10 py-3 bg-background">
+      <Link to="/" className="flex items-center gap-2 md:gap-4 text-foreground">
+        <ChefHat className="w-6 h-6 md:w-8 md:h-8 text-[#11d452]" />
+        <h2 className="text-foreground text-base md:text-lg font-bold leading-tight tracking-[-0.015em]">
           Tarifim.com
         </h2>
       </Link>
-      <div className="flex flex-1 justify-end gap-8">
-        <nav className="flex items-center gap-9">
+      <div className="flex flex-1 justify-end gap-2 md:gap-8">
+        <nav className="hidden md:flex items-center gap-9">
           <Link to="/" className="text-foreground text-sm font-medium leading-normal hover:text-accent transition-colors">
             Ana Sayfa
           </Link>
@@ -72,14 +72,14 @@ const Header = () => {
         <Button
           variant="secondary"
           size="icon"
-          className="h-10 w-10"
+          className="h-8 w-8 md:h-10 md:w-10"
           onClick={() => navigate('/notifications')}
         >
-          <Bell className="h-5 w-5" />
+          <Bell className="h-4 w-4 md:h-5 md:w-5" />
         </Button>
         <div
           onClick={() => navigate('/profile')}
-          className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 cursor-pointer hover:ring-2 hover:ring-accent transition-all"
+          className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-8 md:size-10 cursor-pointer hover:ring-2 hover:ring-accent transition-all"
           style={{
             backgroundImage: `url("${avatarUrl}")`
           }}

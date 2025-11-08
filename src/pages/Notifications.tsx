@@ -78,24 +78,27 @@ const Notifications = () => {
             <Link 
               key={notification.id}
               to={notification.link}
-              className="flex items-center gap-4 bg-background px-4 min-h-[72px] py-2 justify-between hover:bg-muted/50 transition-colors cursor-pointer"
+              className="flex items-center gap-2 md:gap-4 bg-background px-2 md:px-4 min-h-[72px] py-2 hover:bg-muted/50 transition-colors cursor-pointer"
             >
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 md:gap-4 flex-1 min-w-0">
                 <div
-                  className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-14 w-14 shrink-0"
+                  className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-12 w-12 md:h-14 md:w-14 shrink-0"
                   style={{ backgroundImage: `url("${notification.avatarUrl}")` }}
                 />
-                <div className="flex flex-col justify-center">
-                  <p className="text-foreground text-base font-medium leading-normal line-clamp-1">
+                <div className="flex flex-col justify-center flex-1 min-w-0">
+                  <p className="text-foreground text-sm md:text-base font-medium leading-normal line-clamp-1">
                     {notification.name}
                   </p>
-                  <p className="text-muted-foreground text-sm font-normal leading-normal line-clamp-2">
+                  <p className="text-muted-foreground text-xs md:text-sm font-normal leading-normal line-clamp-2">
                     {notification.message}
+                  </p>
+                  <p className="text-muted-foreground text-xs md:hidden font-normal leading-normal mt-1">
+                    {notification.time}
                   </p>
                 </div>
               </div>
-              <div className="shrink-0">
-                <p className="text-muted-foreground text-sm font-normal leading-normal">
+              <div className="shrink-0 hidden md:block">
+                <p className="text-muted-foreground text-sm font-normal leading-normal whitespace-nowrap">
                   {notification.time}
                 </p>
               </div>
