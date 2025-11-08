@@ -217,7 +217,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      check_comment_rate_limit: {
+        Args: { p_user_id: string }
+        Returns: boolean
+      }
+      check_recipe_rate_limit: { Args: { p_user_id: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never

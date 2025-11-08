@@ -139,15 +139,15 @@ const RecipeDetail = () => {
         return;
       }
 
-      // TODO: Comment rate limiting will be enabled after migration approval
       // Check rate limit
-      // const { data: canComment } = await supabase.rpc('check_comment_rate_limit', { 
-      //   p_user_id: user.id 
-      // });
-      // if (!canComment) {
-      //   toast.error("Saatlik yorum limitinize ulaştınız (50 yorum/saat). Lütfen biraz bekleyin.");
-      //   return;
-      // }
+      const { data: canComment } = await supabase.rpc('check_comment_rate_limit', { 
+        p_user_id: user.id 
+      });
+
+      if (!canComment) {
+        toast.error("Saatlik yorum limitinize ulaştınız (50 yorum/saat). Lütfen biraz bekleyin.");
+        return;
+      }
 
       // Validate comment
       const validationResult = commentSchema.safeParse({ comment: newComment });
