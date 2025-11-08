@@ -148,15 +148,29 @@ const Profile = () => {
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result as string;
-        setAvatarPreview(result);
-        setSettings({ ...settings, avatarUrl: result });
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+    if (!validTypes.includes(file.type)) {
+      toast.error('Sadece resim dosyaları yüklenebilir (JPEG, PNG, WebP, GIF)');
+      return;
     }
+
+    // Validate file size (5MB max)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast.error('Resim boyutu en fazla 5MB olabilir');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const result = reader.result as string;
+      setAvatarPreview(result);
+      setSettings({ ...settings, avatarUrl: result });
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleFollow = async () => {
@@ -454,7 +468,7 @@ const Profile = () => {
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/*"
+                    accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
                     className="hidden"
                     onChange={handleAvatarChange}
                   />
