@@ -10,11 +10,13 @@ import { Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { recipeSchema } from "@/lib/validations";
+import { uploadImage } from "@/lib/storage";
 
 const AddRecipe = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -44,6 +46,8 @@ const AddRecipe = () => {
       return;
     }
 
+    // Store file and create preview
+    setSelectedFile(file);
     const reader = new FileReader();
     reader.onloadend = () => {
       setImagePreview(reader.result as string);
@@ -58,6 +62,16 @@ const AddRecipe = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         toast.error("Tarif eklemek için giriş yapmalısınız");
+        return;
+      }
+
+      // Check rate limit
+      const { data: canCreate } = await supabase.rpc('check_recipe_rate_limit', { 
+        p_user_id: user.id 
+      });
+
+      if (!canCreate) {
+        toast.error("Günlük tarif ekleme limitinize ulaştınız (10 tarif/gün). Lütfen yarın tekrar deneyin.");
         return;
       }
 
@@ -82,13 +96,19 @@ const AddRecipe = () => {
         return;
       }
 
+      // Upload image to storage if a file was selected
+      let imageUrl = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=533&fit=crop";
+      if (selectedFile) {
+        imageUrl = await uploadImage(selectedFile, 'recipe-images');
+      }
+
       const { error } = await supabase
         .from('recipes')
         .insert({
           user_id: user.id,
           title: formData.title,
           description: formData.description,
-          image_url: imagePreview || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=533&fit=crop",
+          image_url: imageUrl,
           prep_time: formData.prepTime,
           cook_time: formData.cookTime,
           servings: formData.servings,
@@ -270,7 +290,10 @@ const AddRecipe = () => {
                     variant="secondary"
                     size="icon"
                     className="absolute top-2 right-2"
-                    onClick={() => setImagePreview("")}
+                    onClick={() => {
+                      setImagePreview("");
+                      setSelectedFile(null);
+                    }}
                   >
                     <X className="h-4 w-4" />
                   </Button>
