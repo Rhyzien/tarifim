@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { commentSchema } from "@/lib/validations";
 
 interface Comment {
   id: string;
@@ -131,12 +132,17 @@ const RecipeDetail = () => {
   };
 
   const handleAddComment = async () => {
-    if (!newComment.trim()) return;
-
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         toast.error("Yorum yapmak için giriş yapmalısınız");
+        return;
+      }
+
+      // Validate comment
+      const validationResult = commentSchema.safeParse({ comment: newComment });
+      if (!validationResult.success) {
+        toast.error(validationResult.error.errors[0].message);
         return;
       }
 
@@ -145,7 +151,7 @@ const RecipeDetail = () => {
         .insert({
           recipe_id: id,
           user_id: user.id,
-          comment: newComment
+          comment: newComment.trim()
         });
 
       setNewComment("");
@@ -304,6 +310,7 @@ const RecipeDetail = () => {
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                   className="min-h-24 mb-2"
+                  maxLength={500}
                 />
                 <Button
                   onClick={handleAddComment}

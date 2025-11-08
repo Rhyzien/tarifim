@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { recipeSchema } from "@/lib/validations";
 
 const AddRecipe = () => {
   const navigate = useNavigate();
@@ -48,6 +49,24 @@ const AddRecipe = () => {
 
       const ingredients = formData.ingredients.split('\n').filter(i => i.trim());
       const instructions = formData.instructions.split('\n').filter(i => i.trim());
+
+      // Validate input
+      const validationResult = recipeSchema.safeParse({
+        title: formData.title,
+        description: formData.description,
+        ingredients,
+        instructions,
+        prepTime: formData.prepTime,
+        cookTime: formData.cookTime,
+        servings: formData.servings,
+        category: formData.category,
+      });
+
+      if (!validationResult.success) {
+        const firstError = validationResult.error.errors[0];
+        toast.error(firstError.message);
+        return;
+      }
 
       const { error } = await supabase
         .from('recipes')
@@ -97,6 +116,7 @@ const AddRecipe = () => {
                   placeholder="Tarifinizin adını girin"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  maxLength={200}
                   required
                 />
               </div>
@@ -113,6 +133,7 @@ const AddRecipe = () => {
                   className="min-h-24"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  maxLength={1000}
                   required
                 />
               </div>

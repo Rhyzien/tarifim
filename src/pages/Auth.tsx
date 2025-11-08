@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
+import { authSchema } from "@/lib/validations";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -40,6 +41,19 @@ const Auth = () => {
     setLoading(true);
 
     try {
+      // Validate input
+      const validationResult = authSchema.safeParse({
+        email,
+        password,
+        name: isLogin ? undefined : name,
+      });
+
+      if (!validationResult.success) {
+        toast.error(validationResult.error.errors[0].message);
+        setLoading(false);
+        return;
+      }
+
       if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({
           email,
@@ -91,6 +105,7 @@ const Auth = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Adınız"
+                  maxLength={100}
                   required
                 />
               </div>
@@ -105,6 +120,7 @@ const Auth = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="ornek@email.com"
+                maxLength={255}
                 required
               />
             </div>
@@ -119,6 +135,7 @@ const Auth = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
+                  maxLength={100}
                   required
                   minLength={6}
                 />

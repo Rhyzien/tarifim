@@ -10,6 +10,7 @@ import { getUserProfile, mockUsers } from "@/data/mockRecipes";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Upload, LogOut } from "lucide-react";
+import { profileSchema } from "@/lib/validations";
 
 const Profile = () => {
   const { userId } = useParams();
@@ -28,6 +29,9 @@ const Profile = () => {
   const [userRecipes, setUserRecipes] = useState<any[]>([]);
   const [recipeCount, setRecipeCount] = useState(0);
   const [savedCount, setSavedCount] = useState(0);
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
+  const [followingUsers, setFollowingUsers] = useState<any[]>([]);
   
   // Settings state
   const [settings, setSettings] = useState({
@@ -91,9 +95,49 @@ const Profile = () => {
           setSavedCount(count || 0);
         }
         
-        // Check if following
-        const following = JSON.parse(localStorage.getItem('following') || '[]');
-        setIsFollowing(following.includes(targetUserId));
+        // Load follower/following counts
+        const { count: followersCount } = await supabase
+          .from('user_follows')
+          .select('*', { count: 'exact', head: true })
+          .eq('following_id', targetUserId);
+        
+        const { count: followingCount } = await supabase
+          .from('user_follows')
+          .select('*', { count: 'exact', head: true })
+          .eq('follower_id', targetUserId);
+        
+        setFollowersCount(followersCount || 0);
+        setFollowingCount(followingCount || 0);
+        
+        // Load following users if own profile
+        if (targetUserId === user.id) {
+          const { data: followingData } = await supabase
+            .from('user_follows')
+            .select(`
+              following_id,
+              profiles:following_id (
+                user_id,
+                name,
+                avatar_url,
+                bio
+              )
+            `)
+            .eq('follower_id', targetUserId);
+          
+          setFollowingUsers((followingData || []).map((f: any) => f.profiles));
+        }
+        
+        // Check if current user is following this profile
+        if (user.id !== targetUserId) {
+          const { data: followData } = await supabase
+            .from('user_follows')
+            .select('id')
+            .eq('follower_id', user.id)
+            .eq('following_id', targetUserId)
+            .maybeSingle();
+          
+          setIsFollowing(!!followData);
+        }
       }
       
       setLoading(false);
@@ -115,29 +159,60 @@ const Profile = () => {
     }
   };
 
-  const handleFollow = () => {
-    const following = JSON.parse(localStorage.getItem('following') || '[]');
-    if (isFollowing) {
-      const updated = following.filter((id: string) => id !== profileUserId);
-      localStorage.setItem('following', JSON.stringify(updated));
-      setIsFollowing(false);
-      toast.success("Takibi bıraktınız");
-    } else {
-      following.push(profileUserId);
-      localStorage.setItem('following', JSON.stringify(following));
-      setIsFollowing(true);
-      setActiveTab("following");
-      toast.success("Takip ediliyor");
+  const handleFollow = async () => {
+    try {
+      if (!currentUserId) {
+        toast.error("Takip etmek için giriş yapmalısınız");
+        return;
+      }
+
+      if (isFollowing) {
+        // Unfollow
+        await supabase
+          .from('user_follows')
+          .delete()
+          .eq('follower_id', currentUserId)
+          .eq('following_id', profileUserId);
+        
+        setIsFollowing(false);
+        setFollowersCount(prev => Math.max(0, prev - 1));
+        toast.success("Takibi bıraktınız");
+      } else {
+        // Follow
+        await supabase
+          .from('user_follows')
+          .insert({
+            follower_id: currentUserId,
+            following_id: profileUserId
+          });
+        
+        setIsFollowing(true);
+        setFollowersCount(prev => prev + 1);
+        toast.success("Takip ediliyor");
+      }
+    } catch (error: any) {
+      toast.error("Bir hata oluştu: " + error.message);
     }
   };
 
   const handleSaveSettings = async () => {
     try {
+      // Validate profile data
+      const validationResult = profileSchema.safeParse({
+        name: settings.name,
+        bio: settings.bio,
+      });
+
+      if (!validationResult.success) {
+        toast.error(validationResult.error.errors[0].message);
+        return;
+      }
+
       const { error } = await supabase
         .from('profiles')
         .update({
-          name: settings.name,
-          bio: settings.bio,
+          name: settings.name.trim(),
+          bio: settings.bio.trim(),
           avatar_url: settings.avatarUrl,
         })
         .eq('user_id', currentUserId);
@@ -195,8 +270,6 @@ const Profile = () => {
     );
   }
 
-  const following = Object.values(mockUsers).filter(u => u.id !== currentUserId).slice(0, 3);
-
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
@@ -218,7 +291,7 @@ const Profile = () => {
                     {profileData?.bio || userProfile?.bio || ""}
                   </p>
                   <p className="text-muted-foreground text-base font-normal leading-normal text-center">
-                    {userProfile?.followersCount || 0} takipçi • {userProfile?.followingCount || 0} takip
+                    {followersCount} takipçi • {followingCount} takip
                   </p>
                 </div>
               </div>
@@ -341,29 +414,33 @@ const Profile = () => {
 
           {activeTab === "following" && isOwnProfile && (
             <div className="flex flex-col gap-2 p-4">
-              {following.map((user) => (
+              {followingUsers.map((user) => (
                 <Link
-                  key={user.id}
-                  to={`/profile/${user.id}`}
+                  key={user.user_id}
+                  to={`/profile/${user.user_id}`}
                   className="flex items-center gap-4 px-4 min-h-[72px] py-2 hover:bg-muted/50 transition-colors rounded-lg"
                 >
                   <div
                     className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-14 w-14 shrink-0"
-                    style={{ backgroundImage: `url("${user.avatarUrl}")` }}
+                    style={{ backgroundImage: `url("${user.avatar_url || 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=400'}")` }}
                   />
                   <div className="flex flex-col justify-center flex-1">
                     <p className="text-foreground text-base font-medium leading-normal">
                       {user.name}
                     </p>
-                    <p className="text-muted-foreground text-sm font-normal leading-normal">
-                      {user.recipeCount} tarif
-                    </p>
+                    {user.bio && (
+                      <p className="text-muted-foreground text-sm font-normal leading-normal">
+                        {user.bio}
+                      </p>
+                    )}
                   </div>
-                  <Button variant="secondary" size="sm">
-                    Takip Ediliyor
-                  </Button>
                 </Link>
               ))}
+              {followingUsers.length === 0 && (
+                <div className="text-center py-20">
+                  <p className="text-muted-foreground">Henüz kimseyi takip etmiyorsunuz.</p>
+                </div>
+              )}
             </div>
           )}
 
@@ -401,6 +478,7 @@ const Profile = () => {
                   <Input
                     value={settings.name}
                     onChange={(e) => setSettings({ ...settings, name: e.target.value })}
+                    maxLength={100}
                   />
                 </div>
                 <div className="flex flex-col gap-2">
@@ -409,6 +487,7 @@ const Profile = () => {
                     value={settings.bio}
                     onChange={(e) => setSettings({ ...settings, bio: e.target.value })}
                     className="min-h-[100px]"
+                    maxLength={500}
                   />
                 </div>
               </div>
