@@ -2,7 +2,9 @@
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/73c540e7-786c-4911-a37f-dbef4d6f267a
+Orjinal web sitesi
+**URL**:tarifim.lovable.app
+
 
 ## How can I edit this code?
 
