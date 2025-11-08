@@ -2,8 +2,8 @@
 
 ## Project info
 
-Orjinal web sitesi
-**URL**:tarifim.lovable.app
+Original site
+**URL**:[tarifim.lovable.app](https://tarifim.lovable.app/)
 
 
 ## How can I edit this code?
