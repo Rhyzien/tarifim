@@ -45,7 +45,9 @@ const Explore = () => {
       setDisplayedRecipes(formatted);
       setHasMore(formatted.length === itemsPerLoad);
     } catch (error) {
-      console.error("Error loading recipes:", error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error("Error loading recipes:", error);
+      }
     }
   };
 
@@ -78,7 +80,9 @@ const Explore = () => {
         }
         setHasMore(formatted.length === itemsPerLoad);
       } catch (error) {
-        console.error("Error loading more recipes:", error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error("Error loading more recipes:", error);
+        }
       } finally {
         setIsLoading(false);
       }

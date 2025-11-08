@@ -60,7 +60,9 @@ const SavedRecipes = () => {
 
       setSavedRecipes(formatted);
     } catch (error) {
-      console.error("Error loading saved recipes:", error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error("Error loading saved recipes:", error);
+      }
     } finally {
       setLoading(false);
     }

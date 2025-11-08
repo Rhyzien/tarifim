@@ -59,7 +59,9 @@ const RecipeDetail = () => {
       if (error) throw error;
       setRecipe(data);
     } catch (error) {
-      console.error("Error loading recipe:", error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error("Error loading recipe:", error);
+      }
     } finally {
       setLoading(false);
     }
@@ -81,7 +83,9 @@ const RecipeDetail = () => {
       if (error) throw error;
       setComments((data as any) || []);
     } catch (error) {
-      console.error("Error loading comments:", error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error("Error loading comments:", error);
+      }
     }
   };
 
@@ -99,7 +103,9 @@ const RecipeDetail = () => {
 
       setIsSaved(!!data);
     } catch (error) {
-      console.error("Error checking saved status:", error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error("Error checking saved status:", error);
+      }
     }
   };
 

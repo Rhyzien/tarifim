@@ -41,7 +41,9 @@ const Index = () => {
       setPopularRecipes(formattedRecipes.slice(3, 6));
       setNewRecipes(formattedRecipes.slice(6, 9));
     } catch (error) {
-      console.error("Error loading recipes:", error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error("Error loading recipes:", error);
+      }
     } finally {
       setLoading(false);
     }
