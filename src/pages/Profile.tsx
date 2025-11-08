@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Upload, LogOut } from "lucide-react";
 import { profileSchema } from "@/lib/validations";
+import { uploadImage } from "@/lib/storage";
 
 const Profile = () => {
   const { userId } = useParams();
@@ -25,6 +26,7 @@ const Profile = () => {
   const [isFollowing, setIsFollowing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [avatarPreview, setAvatarPreview] = useState("");
+  const [selectedAvatarFile, setSelectedAvatarFile] = useState<File | null>(null);
   const [profileData, setProfileData] = useState<any>(null);
   const [userRecipes, setUserRecipes] = useState<any[]>([]);
   const [recipeCount, setRecipeCount] = useState(0);
@@ -164,11 +166,12 @@ const Profile = () => {
       return;
     }
 
+    // Store file and create preview
+    setSelectedAvatarFile(file);
     const reader = new FileReader();
     reader.onloadend = () => {
       const result = reader.result as string;
       setAvatarPreview(result);
-      setSettings({ ...settings, avatarUrl: result });
     };
     reader.readAsDataURL(file);
   };
@@ -222,12 +225,18 @@ const Profile = () => {
         return;
       }
 
+      // Upload avatar to storage if a new file was selected
+      let avatarUrl = settings.avatarUrl;
+      if (selectedAvatarFile) {
+        avatarUrl = await uploadImage(selectedAvatarFile, 'avatars');
+      }
+
       const { error } = await supabase
         .from('profiles')
         .update({
           name: settings.name.trim(),
           bio: settings.bio.trim(),
-          avatar_url: settings.avatarUrl,
+          avatar_url: avatarUrl,
         })
         .eq('user_id', currentUserId);
       

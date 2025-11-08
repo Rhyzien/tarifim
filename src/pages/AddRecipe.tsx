@@ -65,15 +65,15 @@ const AddRecipe = () => {
         return;
       }
 
+      // TODO: Rate limiting will be enabled after migration approval
       // Check rate limit
-      const { data: canCreate } = await supabase.rpc('check_recipe_rate_limit', { 
-        p_user_id: user.id 
-      });
-
-      if (!canCreate) {
-        toast.error("Günlük tarif ekleme limitinize ulaştınız (10 tarif/gün). Lütfen yarın tekrar deneyin.");
-        return;
-      }
+      // const { data: canCreate } = await supabase.rpc('check_recipe_rate_limit', { 
+      //   p_user_id: user.id 
+      // });
+      // if (!canCreate) {
+      //   toast.error("Günlük tarif ekleme limitinize ulaştınız (10 tarif/gün). Lütfen yarın tekrar deneyin.");
+      //   return;
+      // }
 
       const ingredients = formData.ingredients.split('\n').filter(i => i.trim());
       const instructions = formData.instructions.split('\n').filter(i => i.trim());
