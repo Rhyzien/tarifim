@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +12,7 @@ interface SimpleRecipe {
 }
 
 const Explore = () => {
+  const location = useLocation();
   const [displayedRecipes, setDisplayedRecipes] = useState<SimpleRecipe[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -19,17 +20,10 @@ const Explore = () => {
   const itemsPerLoad = 4;
 
   useEffect(() => {
+    setDisplayedRecipes([]);
+    setHasMore(true);
     loadInitial();
-    
-    // Reload recipes when user navigates back to this page
-    const handleFocus = () => {
-      setDisplayedRecipes([]);
-      loadInitial();
-    };
-    
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
-  }, []);
+  }, [location.pathname]);
 
   const loadInitial = async () => {
     try {

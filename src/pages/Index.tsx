@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import Header from "@/components/Header";
 import RecipeCarousel from "@/components/RecipeCarousel";
 import RecipeGrid from "@/components/RecipeGrid";
 import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
+  const location = useLocation();
   const [featuredRecipes, setFeaturedRecipes] = useState<any[]>([]);
   const [popularRecipes, setPopularRecipes] = useState<any[]>([]);
   const [newRecipes, setNewRecipes] = useState<any[]>([]);
@@ -12,15 +14,7 @@ const Index = () => {
 
   useEffect(() => {
     loadRecipes();
-    
-    // Reload recipes when user navigates back to this page
-    const handleFocus = () => {
-      loadRecipes();
-    };
-    
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
-  }, []);
+  }, [location.pathname]);
 
   const loadRecipes = async () => {
     try {
