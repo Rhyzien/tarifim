@@ -121,7 +121,7 @@ const AddRecipe = () => {
 
       toast.success("Tarifınız başarıyla paylaşıldı!");
       setTimeout(() => {
-        navigate("/explore");
+        window.location.href = "/explore";
       }, 1500);
     } catch (error: any) {
       toast.error("Tarif eklenirken bir hata oluştu: " + error.message);
